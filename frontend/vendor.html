@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Dashboard - Taxparency</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1><a href="index.html" style="color: white; text-decoration: none;">🔍 Taxparency</a></h1>
+                <p class="tagline">Vendor Dashboard</p>
+            </div>
+            <div class="blockchain-status">
+                <div class="status-indicator" id="blockchainStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="hero">
+                <h2>Welcome, Vendor</h2>
+                <p class="hero-description">
+                    Register your company, submit proposals to government tenders, and manage your projects with full transparency. 
+                    All interactions are recorded on the blockchain to ensure accountability.
+                </p>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <section class="stats-overview">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="vendorStatus">Not Registered</div>
+                        <div class="stat-label">Registration Status</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="submittedProposals">0</div>
+                        <div class="stat-label">Submitted Proposals</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="wonTenders">0</div>
+                        <div class="stat-label">Won Tenders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeProjects">0</div>
+                        <div class="stat-label">Active Projects</div>
+                    </div>
+                </div>
+            </section>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+                
+                <!-- Vendor Registration Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Vendor Registration</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="registrationSection">
+                            <form id="vendorRegistrationForm">
+                                <div class="form-group">
+                                    <label class="form-label" for="companyName">Company Name</label>
+                                    <input type="text" 
+                                           id="companyName" 
+                                           class="form-input" 
+                                           placeholder="Your Company Name Ltd." 
+                                           required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="kycDocuments">KYC Documents</label>
+                                    <input type="file" 
+                                           id="kycDocuments" 
+                                           class="form-input" 
+                                           accept=".pdf,.doc,.docx,.jpg,.png" 
+                                           multiple
+                                           required>
+                                    <small style="color: var(--text-secondary); font-size: 0.875rem;">
+                                        Upload business license, certificates, and ID documents
+                                    </small>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" id="registerBtn">
+                                    Register as Vendor
+                                </button>
+                            </form>
+                        </div>
+
+                        <div id="registeredInfo" style="display: none;">
+                            <div style="background: var(--success-bg); color: var(--success-color); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                                <h4 style="margin-bottom: 0.5rem;">✓ Registration Complete</h4>
+                                <p style="margin: 0; font-size: 0.875rem;">Your vendor account is registered and verified.</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="flex justify-between mb-2">
+                                    <span>Vendor ID:</span>
+                                    <span id="vendorId">Loading...</span>
+                                </div>
+                                <div class="flex justify-between mb-2">
+                                    <span>Company Name:</span>
+                                    <span id="registeredCompanyName">Loading...</span>
+                                </div>
+                                <div class="flex justify-between mb-2">
+                                    <span>Registration Date:</span>
+                                    <span id="registrationDate">Loading...</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Verification Status:</span>
+                                    <span id="verificationStatus">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                            <h4 style="margin-bottom: 0.5rem; font-size: 1rem;">Vendor Guidelines:</h4>
+                            <ul style="font-size: 0.875rem; color: var(--text-secondary);">
+                                <li>✓ Register and complete KYC verification</li>
+                                <li>✓ Monitor open tenders and submit quality proposals</li>
+                                <li>✓ Provide regular project updates if selected</li>
+                                <li>✓ Maintain transparency in all dealings</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="flex flex-col gap-2">
+                            <button class="btn btn-secondary" onclick="scrollToSection('availableTenders')">
+                                📋 View Available Tenders
+                            </button>
+                            <button class="btn btn-secondary" onclick="scrollToSection('myProposals')">
+                                📝 My Proposals
+                            </button>
+                            <button class="btn btn-secondary" onclick="scrollToSection('myProjects')">
+                                🏗️ My Projects
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Tenders -->
+            <section class="mb-4" id="availableTenders">
+                <h3 class="mb-3">Available Tenders</h3>
+                <div id="availableTendersList" class="loading">
+                    Loading available tenders...
+                </div>
+            </section>
+
+            <!-- My Proposals -->
+            <section class="mb-4" id="myProposals">
+                <h3 class="mb-3">My Proposals</h3>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Proposal ID</th>
+                                <th>Tender Title</th>
+                                <th>Cost (ETH)</th>
+                                <th>Submitted Date</th>
+                                <th>Status</th>
+                                <th>Votes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proposalsTable">
+                            <tr>
+                                <td colspan="6" class="text-center">Loading your proposals...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- My Projects -->
+            <section class="mb-4" id="myProjects">
+                <h3 class="mb-3">My Projects</h3>
+                <div id="projectsList" class="loading">
+                    Loading your active projects...
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Vendor Responsibilities</h4>
+                    <p>As a registered vendor, you are expected to deliver quality services, maintain transparency, and provide regular project updates.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Best Practices</h4>
+                    <ul>
+                        <li>Submit competitive and realistic proposals</li>
+                        <li>Provide regular project updates</li>
+                        <li>Maintain quality standards</li>
+                        <li>Respond promptly to government inquiries</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <p>Need help with proposals or project management? Contact our vendor support team for assistance.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.0/dist/ethers.umd.min.js"></script>
+    <script src="js/web3-init.js"></script>
+    <script src="js/contract-calls.js"></script>
+    <script>
+        let userAddress = null;
+        let vendorInfo = null;
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await initializeWeb3();
+                userAddress = await window.signer.getAddress();
+                
+                await checkVendorRegistration();
+                await loadDashboardData();
+                await loadAvailableTenders();
+                await loadMyProposals();
+                await loadMyProjects();
+                
+                setupEventListeners();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                updateConnectionStatus('disconnected', 'Connection Failed');
+            }
+        });
+
+        async function checkVendorRegistration() {
+            try {
+                // This would check if the current address is registered as a vendor
+                // For now, we'll use a placeholder approach
+                const registrationSection = document.getElementById('registrationSection');
+                const registeredInfo = document.getElementById('registeredInfo');
+                
+                // Try to get vendor info from contract (placeholder)
+                // In real implementation, you would have a function to check vendor registration by address
+                
+                // For demonstration, assume vendor is not registered initially
+                document.getElementById('vendorStatus').textContent = 'Not Registered';
+                
+            } catch (error) {
+                console.error('Error checking vendor registration:', error);
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                // Load vendor-specific statistics
+                // These would be calculated based on actual contract data
+                
+                // Placeholder for now
+                document.getElementById('submittedProposals').textContent = '0';
+                document.getElementById('wonTenders').textContent = '0';
+                document.getElementById('activeProjects').textContent = '0';
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        async function loadAvailableTenders() {
+            try {
+                const tenderIds = await getActiveTenders();
+                const container = document.getElementById('availableTendersList');
+                
+                if (tenderIds.length === 0) {
+                    container.innerHTML = `
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h4>No Available Tenders</h4>
+                                <p>There are currently no open tenders for proposal submission.</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const tenders = await Promise.all(
+                    tenderIds.map(id => loadTenderWithDetails(id))
+                );
+
+                container.innerHTML = tenders.map(tender => {
+                    const timeLeft = new Date(tender.deadline * 1000) - new Date();
+                    const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+                    const canSubmitProposal = tender.status === 0; // Open for proposals
+                    
+                    return `
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <div class="flex justify-between items-center">
+                                    <h4 class="card-title">Tender #${tender.id}: ${tender.title}</h4>
+                                    <div class="flex gap-2">
+                                        <span class="badge badge-info">${formatEvaluationType(tender.evaluationType)}</span>
+                                        <span class="badge ${tender.status === 0 ? 'badge-success' : 'badge-warning'}">
+                                            ${formatTenderStatus(tender.status)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="flex justify-between mb-2">
+                                        <span>Budget:</span>
+                                        <span><strong>${formatEther(tender.amount)} ETH</strong></span>
+                                    </div>
+                                    <div class="flex justify-between mb-2">
+                                        <span>Deadline:</span>
+                                        <span>${formatTimestamp(tender.deadline)} (${daysLeft > 0 ? daysLeft + ' days left' : 'Expired'})</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Current Proposals:</span>
+                                        <span>${tender.proposals.length}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    ${canSubmitProposal && daysLeft > 0 ? `
+                                        <button class="btn btn-primary" onclick="showProposalForm(${tender.id}, '${tender.title}', '${formatEther(tender.amount)}')">
+                                            Submit Proposal
+                                        </button>
+                                    ` : `
+                                        <span class="text-muted">
+                                            ${tender.status !== 0 ? 'Proposal submission closed' : 'Deadline expired'}
+                                        </span>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading available tenders:', error);
+                document.getElementById('availableTendersList').innerHTML = 
+                    '<div class="error">Error loading tenders</div>';
+            }
+        }
+
+        async function loadMyProposals() {
+            // In a real implementation, you would filter proposals by vendor address
+            document.getElementById('proposalsTable').innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center">Proposal tracking will be implemented based on vendor registration.</td>
+                </tr>
+            `;
+        }
+
+        async function loadMyProjects() {
+            // In a real implementation, you would load projects assigned to this vendor
+            document.getElementById('projectsList').innerHTML = `
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h4>No Active Projects</h4>
+                        <p>You don't have any active projects yet. Win a tender to start your first project!</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupEventListeners() {
+            // Vendor registration form
+            document.getElementById('vendorRegistrationForm').addEventListener('submit', handleVendorRegistration);
+        }
+
+        async function handleVendorRegistration(event) {
+            event.preventDefault();
+            
+            const registerBtn = document.getElementById('registerBtn');
+            const originalText = registerBtn.textContent;
+            
+            try {
+                registerBtn.disabled = true;
+                registerBtn.textContent = 'Registering...';
+                
+                const companyName = document.getElementById('companyName').value;
+                const kycDocuments = document.getElementById('kycDocuments').files;
+                
+                // In a real implementation, you would upload documents to IPFS
+                const kycHash = generateIPFSHash('kyc-documents-' + Date.now());
+                
+                await registerVendor(companyName, kycHash);
+                
+                // Show success message
+                alert('Vendor registration submitted successfully! Please wait for verification.');
+                
+                // Switch to registered view
+                document.getElementById('registrationSection').style.display = 'none';
+                document.getElementById('registeredInfo').style.display = 'block';
+                document.getElementById('vendorStatus').textContent = 'Registered';
+                
+                // Reset form and reload data
+                document.getElementById('vendorRegistrationForm').reset();
+                await loadDashboardData();
+                
+            } catch (error) {
+                console.error('Error registering vendor:', error);
+                alert('Error registering vendor: ' + error.message);
+            } finally {
+                registerBtn.disabled = false;
+                registerBtn.textContent = originalText;
+            }
+        }
+
+        function showProposalForm(tenderId, tenderTitle, tenderBudget) {
+            const modal = `
+                <div id="proposalModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                    <div class="card" style="width: 90%; max-width: 500px; max-height: 90%; overflow-y: auto;">
+                        <div class="card-header">
+                            <h3 class="card-title">Submit Proposal - ${tenderTitle}</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="proposalForm">
+                                <div class="form-group">
+                                    <label class="form-label">Tender Budget</label>
+                                    <input type="text" class="form-input" value="${tenderBudget} ETH" readonly>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="proposalCost">Your Proposal Cost (ETH)</label>
+                                    <input type="number" 
+                                           id="proposalCost" 
+                                           class="form-input" 
+                                           step="0.01" 
+                                           min="0.01"
+                                           max="${tenderBudget}"
+                                           placeholder="Enter your cost"
+                                           required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="technicalDocs">Technical Documents</label>
+                                    <input type="file" 
+                                           id="technicalDocs" 
+                                           class="form-input" 
+                                           accept=".pdf,.doc,.docx" 
+                                           multiple
+                                           required>
+                                    <small style="color: var(--text-secondary); font-size: 0.875rem;">
+                                        Upload technical specifications, timeline, and methodology
+                                    </small>
+                                </div>
+                                
+                                <div class="flex gap-2">
+                                    <button type="submit" class="btn btn-primary">Submit Proposal</button>
+                                    <button type="button" class="btn btn-secondary" onclick="closeProposalModal()">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modal);
+            
+            document.getElementById('proposalForm').addEventListener('submit', (e) => 
+                handleProposalSubmission(e, tenderId)
+            );
+        }
+
+        async function handleProposalSubmission(event, tenderId) {
+            event.preventDefault();
+            
+            try {
+                const cost = document.getElementById('proposalCost').value;
+                const technicalDocs = document.getElementById('technicalDocs').files;
+                
+                // In a real implementation, upload technical docs to IPFS
+                const technicalDocsHash = generateIPFSHash('technical-docs-' + Date.now());
+                
+                await submitProposal(tenderId, cost, technicalDocsHash);
+                
+                alert('Proposal submitted successfully!');
+                closeProposalModal();
+                await loadAvailableTenders();
+                await loadMyProposals();
+                await loadDashboardData();
+                
+            } catch (error) {
+                console.error('Error submitting proposal:', error);
+                alert('Error submitting proposal: ' + error.message);
+            }
+        }
+
+        function closeProposalModal() {
+            const modal = document.getElementById('proposalModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+    </script>
+</body>
+</html>
