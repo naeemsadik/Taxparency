@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Dashboard - Taxparency</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1><a href="index.html" style="color: white; text-decoration: none;">🔍 Taxparency</a></h1>
+                <p class="tagline">Citizen Dashboard</p>
+            </div>
+            <div class="blockchain-status">
+                <div class="status-indicator" id="blockchainStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="hero">
+                <h2>Welcome, Citizen</h2>
+                <p class="hero-description">
+                    Submit tax returns, validate government tenders, and monitor how your tax contributions are being spent.
+                    Your participation helps ensure transparency in government operations.
+                </p>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <section class="stats-overview">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="mySubmissions">0</div>
+                        <div class="stat-label">My Tax Submissions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="myVotes">0</div>
+                        <div class="stat-label">My Tender Votes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="availableVotes">0</div>
+                        <div class="stat-label">Available to Vote</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalRevenue">Loading...</div>
+                        <div class="stat-label">Total Validated Revenue</div>
+                    </div>
+                </div>
+            </section>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+                
+                <!-- Tax Submission Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Submit Tax Return</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="taxSubmissionForm">
+                            <div class="form-group">
+                                <label class="form-label" for="taxAmount">Tax Amount (ETH)</label>
+                                <input type="number" 
+                                       id="taxAmount" 
+                                       class="form-input" 
+                                       step="0.01" 
+                                       min="0.01" 
+                                       placeholder="0.50" 
+                                       required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="taxDocuments">Tax Documents</label>
+                                <input type="file" 
+                                       id="taxDocuments" 
+                                       class="form-input" 
+                                       accept=".pdf,.doc,.docx,.jpg,.png" 
+                                       multiple>
+                                <small style="color: var(--text-secondary); font-size: 0.875rem;">
+                                    Upload supporting documents (PDF, DOC, images)
+                                </small>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submitTaxBtn">
+                                Submit Tax Return
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Current Balance & Revenue Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Government Revenue Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="flex justify-between mb-2">
+                                <span>Total Tax Revenue:</span>
+                                <span id="totalTaxRevenue">Loading...</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span>Validated Revenue:</span>
+                                <span id="validatedTaxRevenue">Loading...</span>
+                            </div>
+                            <div class="flex justify-between mb-3">
+                                <span>Available Budget:</span>
+                                <span id="availableBudget">Loading...</span>
+                            </div>
+                        </div>
+                        
+                        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-md);">
+                            <h4 style="margin-bottom: 0.5rem; font-size: 1rem;">Quick Facts:</h4>
+                            <ul style="font-size: 0.875rem; color: var(--text-secondary);">
+                                <li>✓ All submissions are stored immutably on blockchain</li>
+                                <li>✓ Tax validation is done by authorized NBR officials</li>
+                                <li>✓ Budget deductions are transparent and trackable</li>
+                                <li>✓ You can vote on government tender selections</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Tax Submissions -->
+            <section class="mb-4">
+                <h3 class="mb-3">My Tax Submissions</h3>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Submission ID</th>
+                                <th>Amount (ETH)</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Validated By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taxSubmissionsTable">
+                            <tr>
+                                <td colspan="5" class="text-center">Loading your submissions...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Available Tenders for Voting -->
+            <section class="mb-4">
+                <h3 class="mb-3">Active Tenders - Vote for Your Preferred Vendors</h3>
+                <div id="tendersForVoting" class="loading">
+                    Loading available tenders...
+                </div>
+            </section>
+
+            <!-- My Voting History -->
+            <section class="mb-4">
+                <h3 class="mb-3">My Voting History</h3>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tender ID</th>
+                                <th>Tender Title</th>
+                                <th>Voted For</th>
+                                <th>Vote Date</th>
+                                <th>Tender Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="votingHistoryTable">
+                            <tr>
+                                <td colspan="5" class="text-center">Loading your voting history...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Citizen Rights</h4>
+                    <p>As a citizen, you have the right to transparent government operations and can actively participate in tender validation.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Your Actions Matter</h4>
+                    <ul>
+                        <li>Submit accurate tax returns</li>
+                        <li>Vote responsibly on tenders</li>
+                        <li>Monitor government spending</li>
+                        <li>Report any irregularities</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Help & Support</h4>
+                    <p>Need help? Check our documentation or contact support for assistance with the platform.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.0/dist/ethers.umd.min.js"></script>
+    <script src="js/web3-init.js"></script>
+    <script src="js/contract-calls.js"></script>
+    <script>
+        let userAddress = null;
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await initializeWeb3();
+                userAddress = await window.signer.getAddress();
+                
+                await loadDashboardData();
+                await loadTaxSubmissions();
+                await loadActiveTenders();
+                await loadVotingHistory();
+                
+                setupEventListeners();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                updateConnectionStatus('disconnected', 'Connection Failed');
+            }
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load revenue data
+                const revenueData = await getTotalRevenue();
+                document.getElementById('totalTaxRevenue').textContent = 
+                    formatEther(revenueData.total) + ' ETH';
+                document.getElementById('validatedTaxRevenue').textContent = 
+                    formatEther(revenueData.validated) + ' ETH';
+                document.getElementById('totalRevenue').textContent = 
+                    formatEther(revenueData.validated) + ' ETH';
+
+                // Load budget data
+                const budgetSummary = await getBudgetSummary();
+                document.getElementById('availableBudget').textContent = 
+                    formatEther(budgetSummary.currentBalance) + ' ETH';
+
+                // Load user-specific stats (placeholder for now)
+                document.getElementById('mySubmissions').textContent = 
+                    (await getCitizenSubmissions(userAddress)).length;
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                document.getElementById('totalTaxRevenue').textContent = 'Error';
+                document.getElementById('validatedTaxRevenue').textContent = 'Error';
+                document.getElementById('availableBudget').textContent = 'Error';
+            }
+        }
+
+        async function loadTaxSubmissions() {
+            try {
+                const submissionIds = await getCitizenSubmissions(userAddress);
+                const tableBody = document.getElementById('taxSubmissionsTable');
+                
+                if (submissionIds.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center">No tax submissions found. Submit your first tax return above.</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const submissions = await Promise.all(
+                    submissionIds.map(id => getTaxSubmission(id))
+                );
+
+                tableBody.innerHTML = submissions.map(submission => `
+                    <tr>
+                        <td>#${submission.id}</td>
+                        <td>${formatEther(submission.amount)} ETH</td>
+                        <td>${formatTimestamp(submission.timestamp)}</td>
+                        <td>
+                            <span class="badge ${submission.validated ? 'badge-success' : 'badge-warning'}">
+                                ${submission.validated ? 'Validated' : 'Pending'}
+                            </span>
+                        </td>
+                        <td>${submission.validatedBy !== '0x0000000000000000000000000000000000000000' ? 
+                            formatAddress(submission.validatedBy) : 'Not yet validated'}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading tax submissions:', error);
+                document.getElementById('taxSubmissionsTable').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="error">Error loading tax submissions</td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function loadActiveTenders() {
+            try {
+                const activeTenderIds = await getActiveTenders();
+                const container = document.getElementById('tendersForVoting');
+                
+                if (activeTenderIds.length === 0) {
+                    container.innerHTML = `
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h4>No Active Tenders</h4>
+                                <p>There are currently no tenders available for citizen voting.</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const tenders = await Promise.all(
+                    activeTenderIds.map(id => loadTenderWithDetails(id))
+                );
+
+                container.innerHTML = tenders.map(tender => {
+                    const timeLeft = new Date(tender.deadline * 1000) - new Date();
+                    const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+                    
+                    return `
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <div class="flex justify-between items-center">
+                                    <h4 class="card-title">Tender #${tender.id}: ${tender.title}</h4>
+                                    <span class="badge badge-info">${formatEvaluationType(tender.evaluationType)}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="flex justify-between mb-2">
+                                        <span>Budget:</span>
+                                        <span>${formatEther(tender.amount)} ETH</span>
+                                    </div>
+                                    <div class="flex justify-between mb-2">
+                                        <span>Deadline:</span>
+                                        <span>${formatTimestamp(tender.deadline)} (${daysLeft} days left)</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Proposals:</span>
+                                        <span>${tender.proposals.length}</span>
+                                    </div>
+                                </div>
+
+                                ${tender.proposals.length > 0 ? `
+                                    <div class="table-container mb-3">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Vendor</th>
+                                                    <th>Cost (ETH)</th>
+                                                    <th>Votes</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${tender.proposals.map(proposal => `
+                                                    <tr>
+                                                        <td>${proposal.vendor.name}</td>
+                                                        <td>${formatEther(proposal.cost)}</td>
+                                                        <td>${proposal.votes}</td>
+                                                        <td>
+                                                            <button class="btn btn-primary btn-sm" 
+                                                                    onclick="voteForVendor(${tender.id}, ${proposal.vendorId})"
+                                                                    ${tender.status !== 1 ? 'disabled' : ''}>
+                                                                Vote
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ` : '<p class="text-center">No proposals submitted yet.</p>'}
+
+                                <div class="text-center">
+                                    ${tender.status === 0 ? 
+                                        '<span class="badge badge-info">Open for Proposals</span>' : 
+                                        tender.status === 1 ? 
+                                            '<span class="badge badge-warning">Closed - Voting Open</span>' : 
+                                            '<span class="badge badge-success">Finalized</span>'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Update available votes count
+                const votableCount = tenders.filter(t => t.status === 1).length;
+                document.getElementById('availableVotes').textContent = votableCount;
+
+            } catch (error) {
+                console.error('Error loading active tenders:', error);
+                document.getElementById('tendersForVoting').innerHTML = `
+                    <div class="error">Error loading tenders</div>
+                `;
+            }
+        }
+
+        async function loadVotingHistory() {
+            // This is a placeholder - in a real implementation, you would track voting history
+            document.getElementById('votingHistoryTable').innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center">Voting history tracking will be implemented with event listeners.</td>
+                </tr>
+            `;
+        }
+
+        function setupEventListeners() {
+            // Tax submission form
+            document.getElementById('taxSubmissionForm').addEventListener('submit', handleTaxSubmission);
+        }
+
+        async function handleTaxSubmission(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitTaxBtn');
+            const originalText = submitBtn.textContent;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+                
+                const taxAmount = document.getElementById('taxAmount').value;
+                const taxDocuments = document.getElementById('taxDocuments').files;
+                
+                // In a real implementation, you would upload documents to IPFS
+                const documentHash = generateIPFSHash('tax-documents-' + Date.now());
+                
+                await submitTaxReturn(taxAmount, documentHash);
+                
+                // Show success message
+                alert('Tax return submitted successfully! It will be validated by NBR officials.');
+                
+                // Reset form and reload data
+                document.getElementById('taxSubmissionForm').reset();
+                await loadDashboardData();
+                await loadTaxSubmissions();
+                
+            } catch (error) {
+                console.error('Error submitting tax return:', error);
+                alert('Error submitting tax return: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        async function voteForVendor(tenderId, vendorId) {
+            try {
+                await citizenVote(tenderId, vendorId);
+                alert('Vote cast successfully!');
+                await loadActiveTenders();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error casting vote:', error);
+                alert('Error casting vote: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

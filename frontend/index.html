@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxparency - Transparent Government Finance Platform</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>🔍 Taxparency</h1>
+                <p class="tagline">Blockchain-Powered Government Transparency</p>
+            </div>
+            <div class="blockchain-status">
+                <div class="status-indicator" id="blockchainStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="hero">
+                <h2>Welcome to Taxparency</h2>
+                <p class="hero-description">
+                    A decentralized platform for transparent government tax handling, 
+                    citizen validation of tenders, and vendor accountability.
+                    All data is stored immutably on the Ethereum blockchain.
+                </p>
+            </section>
+
+            <section class="stats-overview">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalRevenue">Loading...</div>
+                        <div class="stat-label">Total Tax Revenue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="validatedRevenue">Loading...</div>
+                        <div class="stat-label">Validated Revenue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeTenders">Loading...</div>
+                        <div class="stat-label">Active Tenders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalProjects">Loading...</div>
+                        <div class="stat-label">Active Projects</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="role-selection">
+                <h3>Select Your Role</h3>
+                <div class="roles-grid">
+                    <div class="role-card" onclick="navigateToRole('citizen')">
+                        <div class="role-icon">👥</div>
+                        <h4>Citizen</h4>
+                        <p>Submit tax returns, validate tenders, and monitor government spending</p>
+                        <div class="role-features">
+                            <span class="feature">✓ Submit Tax Returns</span>
+                            <span class="feature">✓ Vote on Tenders</span>
+                            <span class="feature">✓ View Revenue Dashboard</span>
+                        </div>
+                    </div>
+
+                    <div class="role-card" onclick="navigateToRole('vendor')">
+                        <div class="role-icon">🏢</div>
+                        <h4>Vendor</h4>
+                        <p>Register, submit proposals, and track project progress</p>
+                        <div class="role-features">
+                            <span class="feature">✓ Register & KYC</span>
+                            <span class="feature">✓ Submit Proposals</span>
+                            <span class="feature">✓ Post Project Updates</span>
+                        </div>
+                    </div>
+
+                    <div class="role-card" onclick="navigateToRole('nbr')">
+                        <div class="role-icon">🏛️</div>
+                        <h4>NBR (Tax Authority)</h4>
+                        <p>Validate tax submissions and monitor revenue</p>
+                        <div class="role-features">
+                            <span class="feature">✓ Validate Tax Returns</span>
+                            <span class="feature">✓ View Audit Logs</span>
+                            <span class="feature">✓ Monitor Revenue</span>
+                        </div>
+                    </div>
+
+                    <div class="role-card" onclick="navigateToRole('bppa')">
+                        <div class="role-icon">📋</div>
+                        <h4>BPPA (Procurement)</h4>
+                        <p>Create tenders, manage procurement, and track projects</p>
+                        <div class="role-features">
+                            <span class="feature">✓ Create Tenders</span>
+                            <span class="feature">✓ Finalize Vendors</span>
+                            <span class="feature">✓ Track Projects</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="recent-activity">
+                <h3>Recent Activity</h3>
+                <div class="activity-list" id="recentActivity">
+                    <div class="activity-item">
+                        <div class="activity-icon">📊</div>
+                        <div class="activity-details">
+                            <div class="activity-title">Loading recent activities...</div>
+                            <div class="activity-time">Please wait</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Taxparency</h4>
+                    <p>Blockchain-powered transparency for government finance and procurement.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Features</h4>
+                    <ul>
+                        <li>Immutable tax records</li>
+                        <li>Transparent tender process</li>
+                        <li>Citizen participation</li>
+                        <li>Real-time budget tracking</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Blockchain Info</h4>
+                    <div id="blockchainInfo">
+                        <div>Network: <span id="networkName">Loading...</span></div>
+                        <div>Block: <span id="currentBlock">Loading...</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.0/dist/ethers.umd.min.js"></script>
+    <script src="js/web3-init.js"></script>
+    <script src="js/contract-calls.js"></script>
+    <script>
+        function navigateToRole(role) {
+            window.location.href = `${role}.html`;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await initializeWeb3();
+                await loadDashboardData();
+                await loadRecentActivity();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                updateConnectionStatus('disconnected', 'Connection Failed');
+            }
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load tax revenue data
+                const revenueData = await getTotalRevenue();
+                document.getElementById('totalRevenue').textContent = 
+                    formatEther(revenueData.total) + ' ETH';
+                document.getElementById('validatedRevenue').textContent = 
+                    formatEther(revenueData.validated) + ' ETH';
+
+                // Load active tenders
+                const activeTenders = await getActiveTenders();
+                document.getElementById('activeTenders').textContent = activeTenders.length;
+
+                // Load active projects
+                const activeProjects = await getActiveProjects();
+                document.getElementById('totalProjects').textContent = activeProjects.length;
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                document.getElementById('totalRevenue').textContent = 'Error';
+                document.getElementById('validatedRevenue').textContent = 'Error';
+                document.getElementById('activeTenders').textContent = 'Error';
+                document.getElementById('totalProjects').textContent = 'Error';
+            }
+        }
+
+        async function loadRecentActivity() {
+            try {
+                const activityContainer = document.getElementById('recentActivity');
+                activityContainer.innerHTML = '<div class="loading">Loading recent activities...</div>';
+
+                // This would typically load recent events from the blockchain
+                // For now, we'll show a placeholder
+                setTimeout(() => {
+                    activityContainer.innerHTML = `
+                        <div class="activity-item">
+                            <div class="activity-icon">💰</div>
+                            <div class="activity-details">
+                                <div class="activity-title">New tax submission validated</div>
+                                <div class="activity-time">2 minutes ago</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">📋</div>
+                            <div class="activity-details">
+                                <div class="activity-title">New tender created: Road Construction Project</div>
+                                <div class="activity-time">15 minutes ago</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">🗳️</div>
+                            <div class="activity-details">
+                                <div class="activity-title">Citizen votes cast on Tender #12</div>
+                                <div class="activity-time">1 hour ago</div>
+                            </div>
+                        </div>
+                    `;
+                }, 1000);
+
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('recentActivity').innerHTML = 
+                    '<div class="error">Error loading activity</div>';
+            }
+        }
+    </script>
+</body>
+</html>
