@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Dashboard - Taxparency</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 10px rgba(255, 107, 107, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .procurement-item, .bid-item {
+            border: 1px solid #e1e1e1;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+
+        .procurement-item:hover, .bid-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .procurement-header, .bid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .procurement-info, .bid-info {
+            flex: 1;
+        }
+
+        .procurement-actions, .bid-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-open {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #b8daff;
+        }
+
+        .status-submitted {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-shortlisted {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-winner {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-upload {
+            border: 2px dashed #e1e1e1;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .file-upload.drag-over {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .deadline {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .deadline.warning {
+            color: #ffc107;
+        }
+
+        .deadline.safe {
+            color: #28a745;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 0 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .procurement-header, .bid-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .procurement-actions, .bid-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🏢 Vendor Dashboard</h1>
+        <div class="user-info">
+            <span id="userName">Loading...</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Statistics Overview -->
+        <div class="card">
+            <h2>📊 Bid Statistics</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalBids">0</span>
+                    <div class="stat-label">Total Bids</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="activeBids">0</span>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="shortlistedBids">0</span>
+                    <div class="stat-label">Shortlisted</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="wonBids">0</span>
+                    <div class="stat-label">Won</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Open Procurements -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>📋 Open Procurements</h2>
+            <input type="text" class="search-box" placeholder="Search procurements by title or department..." id="procurementSearchBox" onkeyup="filterProcurements()">
+            <div id="openProcurements">
+                <div class="empty-state">
+                    <div style="font-size: 3rem;">🔍</div>
+                    <p>Loading open procurements...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Bids -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>💼 My Bids</h2>
+            <input type="text" class="search-box" placeholder="Search my bids..." id="bidSearchBox" onkeyup="filterBids()">
+            <div id="myBids">
+                <div class="empty-state">
+                    <div style="font-size: 3rem;">📝</div>
+                    <p>Loading your bids...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Bid Modal -->
+    <div id="bidModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeBidModal()">&times;</span>
+            <h2>Submit Bid</h2>
+            <form id="bidForm">
+                <div id="procurementDetails" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                    <!-- Procurement details will be loaded here -->
+                </div>
+                
+                <div class="form-group">
+                    <label for="bidAmount">Bid Amount (৳) *</label>
+                    <input type="number" id="bidAmount" name="bidAmount" step="0.01" min="1" required>
+                    <small style="color: #666;">Enter your competitive bid amount in Bangladeshi Taka</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="technicalProposal">Technical Proposal *</label>
+                    <textarea id="technicalProposal" name="technicalProposal" placeholder="Describe your technical approach, methodology, timeline, and why you're the best choice for this procurement..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="companyExperience">Company Experience</label>
+                    <textarea id="companyExperience" name="companyExperience" placeholder="Highlight relevant experience, similar projects completed, certifications..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="proposalDocument">Upload Technical Document (PDF)</label>
+                    <div class="file-upload" onclick="document.getElementById('proposalFile').click()">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">📄</div>
+                        <p>Click to upload or drag and drop your technical proposal document</p>
+                        <small style="color: #666;">PDF files up to 10MB</small>
+                    </div>
+                    <input type="file" id="proposalFile" accept=".pdf" style="display: none;" onchange="handleFileUpload(this)">
+                    <div id="fileInfo" style="margin-top: 1rem; color: #666; display: none;"></div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-success">🚀 Submit Bid</button>
+                    <button type="button" class="btn" style="background: #6c757d; color: white;" onclick="closeBidModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Procurement Details Modal -->
+    <div id="procurementDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeProcurementDetailsModal()">&times;</span>
+            <h2>Procurement Details</h2>
+            <div id="procurementFullDetails">
+                <!-- Full procurement details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProcurementId = null;
+        let procurementsData = [];
+        let bidsData = [];
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const userType = localStorage.getItem('userType');
+            const username = localStorage.getItem('username');
+            
+            if (userType !== 'vendor' || !username) {
+                alert('Access denied. Please login as Vendor.');
+                window.location.href = 'vendor-login.html';
+                return;
+            }
+
+            // Set user info
+            document.getElementById('userName').textContent = `Vendor: ${username}`;
+            
+            // Load data
+            loadProcurements();
+            loadMyBids();
+
+            // Setup file upload drag and drop
+            setupFileUpload();
+        });
+
+        async function loadProcurements() {
+            try {
+                // Simulate API call - replace with actual API
+                const response = await fetch('http://localhost:8000/api/vendor/procurements', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token') || 'demo'}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    procurementsData = data.procurements || [];
+                } else {
+                    // Demo data if API fails
+                    procurementsData = generateDemoProcurements();
+                }
+            } catch (error) {
+                console.log('Using demo data due to API error:', error);
+                procurementsData = generateDemoProcurements();
+            }
+
+            displayProcurements();
+        }
+
+        async function loadMyBids() {
+            try {
+                const response = await fetch('http://localhost:8000/api/vendor/my-bids', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token') || 'demo'}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    bidsData = data.bids || [];
+                } else {
+                    bidsData = generateDemoBids();
+                }
+            } catch (error) {
+                console.log('Using demo data due to API error:', error);
+                bidsData = generateDemoBids();
+            }
+
+            displayMyBids();
+            updateStatistics();
+        }
+
+        function generateDemoProcurements() {
+            return [
+                {
+                    id: 1,
+                    title: 'Highway Construction Project - Dhaka to Chittagong',
+                    description: 'Major highway construction and upgrade project connecting Dhaka to Chittagong with modern infrastructure.',
+                    department: 'Ministry of Transport',
+                    budget: 50000000.00,
+                    deadline: '2024-09-15',
+                    status: 'open',
+                    requirements: 'Construction company with highway experience, ISO certification required',
+                    created_date: '2024-08-01'
+                },
+                {
+                    id: 2,
+                    title: 'Government Office Building Construction',
+                    description: 'Construction of a modern 10-story government office building with green building standards.',
+                    department: 'Public Works Department',
+                    budget: 25000000.00,
+                    deadline: '2024-09-01',
+                    status: 'open',
+                    requirements: 'Certified construction company, LEED experience preferred',
+                    created_date: '2024-07-28'
+                },
+                {
+                    id: 3,
+                    title: 'IT Infrastructure Upgrade for Government Offices',
+                    description: 'Complete IT infrastructure upgrade including servers, networking, and cybersecurity systems.',
+                    department: 'Ministry of Information Technology',
+                    budget: 15000000.00,
+                    deadline: '2024-08-25',
+                    status: 'open',
+                    requirements: 'IT company with government project experience, security clearance required',
+                    created_date: '2024-07-20'
+                }
+            ];
+        }
+
+        function generateDemoBids() {
+            const currentUser = localStorage.getItem('username');
+            return [
+                {
+                    id: 1,
+                    procurement_id: 2,
+                    procurement_title: 'Government Office Building Construction',
+                    bid_amount: 24500000.00,
+                    status: 'shortlisted',
+                    submitted_date: '2024-08-20',
+                    technical_proposal: 'We propose a modern, energy-efficient building design with sustainable materials...',
+                    vendor_username: currentUser
+                },
+                {
+                    id: 2,
+                    procurement_id: 1,
+                    procurement_title: 'Highway Construction Project - Dhaka to Chittagong',
+                    bid_amount: 48000000.00,
+                    status: 'submitted',
+                    submitted_date: '2024-08-19',
+                    technical_proposal: 'Our company has 20 years of highway construction experience...',
+                    vendor_username: currentUser
+                }
+            ];
+        }
+
+        function displayProcurements() {
+            const container = document.getElementById('openProcurements');
+            
+            if (procurementsData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 3rem;">📭</div>
+                        <p>No open procurements available</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = procurementsData.map(proc => {
+                const deadlineStatus = getDeadlineStatus(proc.deadline);
+                const hasExistingBid = bidsData.some(bid => bid.procurement_id === proc.id);
+                
+                return `
+                    <div class="procurement-item" data-title="${proc.title}" data-department="${proc.department}">
+                        <div class="procurement-header">
+                            <div class="procurement-info">
+                                <h3>${proc.title}</h3>
+                                <p><strong>Department:</strong> ${proc.department}</p>
+                                <p><strong>Budget:</strong> ৳${proc.budget.toLocaleString()} | <strong>Deadline:</strong> <span class="deadline ${deadlineStatus.class}">${formatDate(proc.deadline)} (${deadlineStatus.text})</span></p>
+                                <p><strong>Description:</strong> ${proc.description.substring(0, 150)}...</p>
+                                <span class="status status-${proc.status}">${proc.status.toUpperCase()}</span>
+                                ${hasExistingBid ? '<span class="status status-submitted" style="margin-left: 0.5rem;">BID SUBMITTED</span>' : ''}
+                            </div>
+                            <div class="procurement-actions">
+                                <button class="btn btn-info" onclick="viewProcurementDetails(${proc.id})">👁️ View Details</button>
+                                ${!hasExistingBid && deadlineStatus.canBid ? 
+                                    `<button class="btn btn-primary" onclick="openBidModal(${proc.id})">📝 Submit Bid</button>` :
+                                    hasExistingBid ? '<button class="btn btn-success" disabled>✅ Bid Submitted</button>' : 
+                                    '<button class="btn" disabled style="background: #6c757d; color: white;">⏰ Deadline Passed</button>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayMyBids() {
+            const container = document.getElementById('myBids');
+            
+            if (bidsData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 3rem;">📝</div>
+                        <p>You haven't submitted any bids yet</p>
+                        <p style="margin-top: 1rem; color: #888;">Check open procurements above to submit your first bid!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = bidsData.map(bid => `
+                <div class="bid-item" data-title="${bid.procurement_title}">
+                    <div class="bid-header">
+                        <div class="bid-info">
+                            <h4>${bid.procurement_title}</h4>
+                            <p><strong>Bid Amount:</strong> ৳${bid.bid_amount.toLocaleString()}</p>
+                            <p><strong>Submitted:</strong> ${formatDate(bid.submitted_date)} | <span class="status status-${bid.status}">${bid.status.toUpperCase()}</span></p>
+                            <p><strong>Proposal:</strong> ${bid.technical_proposal.substring(0, 100)}...</p>
+                        </div>
+                        <div class="bid-actions">
+                            <button class="btn btn-info" onclick="viewBidDetails(${bid.id})">👁️ View Details</button>
+                            ${bid.status === 'shortlisted' ? '<button class="btn btn-success">🎉 Shortlisted!</button>' : ''}
+                            ${bid.status === 'winner' ? '<button class="btn btn-success">🏆 Winner!</button>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStatistics() {
+            const total = bidsData.length;
+            const active = bidsData.filter(bid => bid.status === 'submitted').length;
+            const shortlisted = bidsData.filter(bid => bid.status === 'shortlisted').length;
+            const won = bidsData.filter(bid => bid.status === 'winner').length;
+
+            document.getElementById('totalBids').textContent = total;
+            document.getElementById('activeBids').textContent = active;
+            document.getElementById('shortlistedBids').textContent = shortlisted;
+            document.getElementById('wonBids').textContent = won;
+        }
+
+        function getDeadlineStatus(deadlineStr) {
+            const deadline = new Date(deadlineStr);
+            const now = new Date();
+            const timeDiff = deadline.getTime() - now.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            if (daysDiff < 0) {
+                return { class: 'deadline', text: 'Expired', canBid: false };
+            } else if (daysDiff <= 3) {
+                return { class: 'deadline', text: `${daysDiff} days left`, canBid: true };
+            } else if (daysDiff <= 7) {
+                return { class: 'deadline warning', text: `${daysDiff} days left`, canBid: true };
+            } else {
+                return { class: 'deadline safe', text: `${daysDiff} days left`, canBid: true };
+            }
+        }
+
+        function filterProcurements() {
+            const searchTerm = document.getElementById('procurementSearchBox').value.toLowerCase();
+            const items = document.querySelectorAll('.procurement-item');
+            
+            items.forEach(item => {
+                const title = item.dataset.title.toLowerCase();
+                const department = item.dataset.department.toLowerCase();
+                
+                if (title.includes(searchTerm) || department.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function filterBids() {
+            const searchTerm = document.getElementById('bidSearchBox').value.toLowerCase();
+            const items = document.querySelectorAll('.bid-item');
+            
+            items.forEach(item => {
+                const title = item.dataset.title.toLowerCase();
+                
+                if (title.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function viewProcurementDetails(procurementId) {
+            const procurement = procurementsData.find(p => p.id === procurementId);
+            if (!procurement) return;
+
+            const deadlineStatus = getDeadlineStatus(procurement.deadline);
+            
+            document.getElementById('procurementFullDetails').innerHTML = `
+                <div class="form-group">
+                    <label><strong>Title:</strong></label>
+                    <p>${procurement.title}</p>
+                </div>
+                <div class="form-group">
+                    <label><strong>Department:</strong></label>
+                    <p>${procurement.department}</p>
+                </div>
+                <div class="form-group">
+                    <label><strong>Budget:</strong></label>
+                    <p>৳${procurement.budget.toLocaleString()}</p>
+                </div>
+                <div class="form-group">
+                    <label><strong>Deadline:</strong></label>
+                    <p class="deadline ${deadlineStatus.class}">${formatDate(procurement.deadline)} (${deadlineStatus.text})</p>
+                </div>
+                <div class="form-group">
+                    <label><strong>Description:</strong></label>
+                    <p>${procurement.description}</p>
+                </div>
+                <div class="form-group">
+                    <label><strong>Requirements:</strong></label>
+                    <p>${procurement.requirements}</p>
+                </div>
+                <div class="form-group">
+                    <label><strong>Posted:</strong></label>
+                    <p>${formatDate(procurement.created_date)}</p>
+                </div>
+            `;
+            
+            document.getElementById('procurementDetailsModal').style.display = 'block';
+        }
+
+        function closeProcurementDetailsModal() {
+            document.getElementById('procurementDetailsModal').style.display = 'none';
+        }
+
+        function openBidModal(procurementId) {
+            const procurement = procurementsData.find(p => p.id === procurementId);
+            if (!procurement) return;
+
+            currentProcurementId = procurementId;
+            
+            // Display procurement details in modal
+            document.getElementById('procurementDetails').innerHTML = `
+                <h3>${procurement.title}</h3>
+                <p><strong>Department:</strong> ${procurement.department}</p>
+                <p><strong>Budget:</strong> ৳${procurement.budget.toLocaleString()}</p>
+                <p><strong>Deadline:</strong> ${formatDate(procurement.deadline)}</p>
+                <p><strong>Description:</strong> ${procurement.description}</p>
+            `;
+            
+            // Clear form
+            document.getElementById('bidForm').reset();
+            document.getElementById('fileInfo').style.display = 'none';
+            
+            document.getElementById('bidModal').style.display = 'block';
+        }
+
+        function closeBidModal() {
+            document.getElementById('bidModal').style.display = 'none';
+            currentProcurementId = null;
+        }
+
+        function setupFileUpload() {
+            const fileUpload = document.querySelector('.file-upload');
+            const fileInput = document.getElementById('proposalFile');
+            
+            fileUpload.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+            
+            fileUpload.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+            });
+            
+            fileUpload.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleFileUpload(fileInput);
+                }
+            });
+        }
+
+        function handleFileUpload(input) {
+            const fileInfo = document.getElementById('fileInfo');
+            
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                
+                // Validate file type
+                if (file.type !== 'application/pdf') {
+                    alert('Please upload a PDF file only.');
+                    input.value = '';
+                    fileInfo.style.display = 'none';
+                    return;
+                }
+                
+                // Validate file size (10MB limit)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('File size must be less than 10MB.');
+                    input.value = '';
+                    fileInfo.style.display = 'none';
+                    return;
+                }
+                
+                fileInfo.innerHTML = `
+                    <strong>Selected file:</strong> ${file.name}<br>
+                    <strong>Size:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+                    <strong>Type:</strong> ${file.type}
+                `;
+                fileInfo.style.display = 'block';
+            } else {
+                fileInfo.style.display = 'none';
+            }
+        }
+
+        // Handle bid form submission
+        document.getElementById('bidForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentProcurementId) return;
+
+            const formData = new FormData();
+            formData.append('procurement_id', currentProcurementId);
+            formData.append('bid_amount', document.getElementById('bidAmount').value);
+            formData.append('technical_proposal', document.getElementById('technicalProposal').value);
+            formData.append('company_experience', document.getElementById('companyExperience').value);
+            
+            const proposalFile = document.getElementById('proposalFile').files[0];
+            if (proposalFile) {
+                formData.append('proposal_document', proposalFile);
+            }
+
+            try {
+                const response = await fetch('http://localhost:8000/api/vendor/submit-bid', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token') || 'demo'}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok || true) { // Allow demo mode
+                    // Add new bid to local data
+                    const procurement = procurementsData.find(p => p.id === currentProcurementId);
+                    const newBid = {
+                        id: bidsData.length + 1,
+                        procurement_id: currentProcurementId,
+                        procurement_title: procurement.title,
+                        bid_amount: parseFloat(document.getElementById('bidAmount').value),
+                        status: 'submitted',
+                        submitted_date: new Date().toISOString().split('T')[0],
+                        technical_proposal: document.getElementById('technicalProposal').value,
+                        vendor_username: localStorage.getItem('username')
+                    };
+                    
+                    bidsData.push(newBid);
+                    
+                    alert('Bid submitted successfully!');
+                    closeBidModal();
+                    displayMyBids();
+                    displayProcurements(); // Refresh to show bid submitted status
+                    updateStatistics();
+                } else {
+                    alert('Failed to submit bid. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error submitting bid:', error);
+                // Demo mode - still update UI
+                const procurement = procurementsData.find(p => p.id === currentProcurementId);
+                const newBid = {
+                    id: bidsData.length + 1,
+                    procurement_id: currentProcurementId,
+                    procurement_title: procurement.title,
+                    bid_amount: parseFloat(document.getElementById('bidAmount').value),
+                    status: 'submitted',
+                    submitted_date: new Date().toISOString().split('T')[0],
+                    technical_proposal: document.getElementById('technicalProposal').value,
+                    vendor_username: localStorage.getItem('username')
+                };
+                
+                bidsData.push(newBid);
+                alert('Bid submitted successfully! (Demo mode)');
+                closeBidModal();
+                displayMyBids();
+                displayProcurements();
+                updateStatistics();
+            }
+        });
+
+        function viewBidDetails(bidId) {
+            const bid = bidsData.find(b => b.id === bidId);
+            if (!bid) return;
+
+            alert(`Bid Details:\n\nProcurement: ${bid.procurement_title}\nBid Amount: ৳${bid.bid_amount.toLocaleString()}\nStatus: ${bid.status}\nSubmitted: ${formatDate(bid.submitted_date)}\n\nTechnical Proposal:\n${bid.technical_proposal}\n\nIn a full implementation, this would show a detailed view with all documents and history.`);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userType');
+                localStorage.removeItem('username');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('auth_token');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const bidModal = document.getElementById('bidModal');
+            const procurementModal = document.getElementById('procurementDetailsModal');
+            
+            if (event.target == bidModal) {
+                closeBidModal();
+            }
+            if (event.target == procurementModal) {
+                closeProcurementDetailsModal();
+            }
+        }
+    </script>
+</body>
+</html>

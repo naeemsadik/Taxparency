@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Dashboard - Taxparency</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 20px;
+        }
+
+        .dashboard-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-title h1 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        .section-title {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.05);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-upload:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e1e1;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d1edff;
+            color: #0c5460;
+        }
+
+        .status-declined {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .procurement-card {
+            border: 1px solid #e1e1e1;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .procurement-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .procurement-title {
+            color: #667eea;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .procurement-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .bid-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vote-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .vote-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .vote-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .vote-yes {
+            background: #28a745;
+            color: white;
+        }
+
+        .vote-no {
+            background: #dc3545;
+            color: white;
+        }
+
+        .blockchain-info {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #667eea;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🏛️ Taxparency</div>
+            <div class="user-info">
+                <span id="userWelcome">Welcome, John Doe</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-title">
+            <h1>Citizen Dashboard</h1>
+            <p>Manage your tax returns and participate in public procurement voting</p>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon">📄</span>
+                <div class="stat-value">3</div>
+                <div class="stat-label">Tax Returns</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">✅</span>
+                <div class="stat-value">2</div>
+                <div class="stat-label">Approved Returns</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">🗳️</span>
+                <div class="stat-value">5</div>
+                <div class="stat-label">Votes Cast</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">💰</span>
+                <div class="stat-value">₹2.4L</div>
+                <div class="stat-label">Total Tax Paid</div>
+            </div>
+        </div>
+
+        <!-- Tax Return Submission -->
+        <section class="section">
+            <h2 class="section-title">
+                <span>📄</span>
+                Submit Tax Return
+            </h2>
+            
+            <form id="taxReturnForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="fiscalYear">Fiscal Year</label>
+                        <select id="fiscalYear" required>
+                            <option value="">Select Fiscal Year</option>
+                            <option value="2024-25">2024-25</option>
+                            <option value="2023-24">2023-24</option>
+                            <option value="2022-23">2022-23</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalIncome">Total Income (BDT)</label>
+                        <input type="number" id="totalIncome" placeholder="Enter total income" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalCost">Total Tax Owed (BDT)</label>
+                        <input type="number" id="totalCost" placeholder="Enter total tax amount" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tax Return PDF Document</label>
+                    <div class="file-upload" onclick="document.getElementById('pdfFile').click()">
+                        <input type="file" id="pdfFile" accept=".pdf" required>
+                        <div>
+                            <span style="font-size: 2rem;">📁</span>
+                            <p>Click to upload your tax return PDF</p>
+                            <small>Only PDF files are accepted</small>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Submit Tax Return</button>
+            </form>
+
+            <div class="blockchain-info">
+                <strong>🔗 Blockchain Integration:</strong> Your tax return will be stored on IPFS and recorded on our private blockchain for transparency and immutability.
+            </div>
+        </section>
+
+        <!-- Tax Return History -->
+        <section class="section">
+            <h2 class="section-title">
+                <span>📋</span>
+                Tax Return History
+            </h2>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fiscal Year</th>
+                        <th>Income</th>
+                        <th>Tax Owed</th>
+                        <th>Status</th>
+                        <th>Reviewed By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2023-24</td>
+                        <td>₹850,000</td>
+                        <td>₹127,500</td>
+                        <td><span class="status-badge status-approved">Approved</span></td>
+                        <td>NBR Officer #1234</td>
+                        <td><button class="btn btn-secondary" onclick="viewDetails('2023-24')">View Details</button></td>
+                    </tr>
+                    <tr>
+                        <td>2022-23</td>
+                        <td>₹720,000</td>
+                        <td>₹108,000</td>
+                        <td><span class="status-badge status-approved">Approved</span></td>
+                        <td>NBR Officer #5678</td>
+                        <td><button class="btn btn-secondary" onclick="viewDetails('2022-23')">View Details</button></td>
+                    </tr>
+                    <tr>
+                        <td>2021-22</td>
+                        <td>₹650,000</td>
+                        <td>₹97,500</td>
+                        <td><span class="status-badge status-pending">Under Review</span></td>
+                        <td>-</td>
+                        <td><button class="btn btn-secondary" onclick="viewDetails('2021-22')">View Details</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Public Procurement Voting -->
+        <section class="section">
+            <h2 class="section-title">
+                <span>🗳️</span>
+                Public Procurement Voting
+            </h2>
+            
+            <div class="procurement-card">
+                <div class="procurement-title">Highway Construction Project - Phase 2</div>
+                <div class="procurement-meta">
+                    <strong>Procurement ID:</strong> BD-2024-HW-002 | 
+                    <strong>Estimated Value:</strong> ₹250 Crore | 
+                    <strong>Voting Ends:</strong> Dec 31, 2024
+                </div>
+                <p>Construction of 50km highway connecting Dhaka to Chittagong with modern infrastructure and safety features.</p>
+                
+                <h4 style="margin: 1rem 0 0.5rem 0; color: #667eea;">Shortlisted Bids:</h4>
+                
+                <div class="bid-card">
+                    <div>
+                        <strong>ABC Construction Ltd.</strong><br>
+                        <small>Bid Amount: ₹235 Crore | Completion: 18 months</small><br>
+                        <small>Votes: 1,245 Yes, 89 No (93.3% approval)</small>
+                    </div>
+                    <div class="vote-buttons">
+                        <button class="vote-btn vote-yes" onclick="castVote('BD-2024-HW-002', 0, true)">Vote Yes</button>
+                        <button class="vote-btn vote-no" onclick="castVote('BD-2024-HW-002', 0, false)">Vote No</button>
+                    </div>
+                </div>
+
+                <div class="bid-card">
+                    <div>
+                        <strong>XYZ Infrastructure Pvt.</strong><br>
+                        <small>Bid Amount: ₹242 Crore | Completion: 16 months</small><br>
+                        <small>Votes: 987 Yes, 234 No (80.8% approval)</small>
+                    </div>
+                    <div class="vote-buttons">
+                        <button class="vote-btn vote-yes" onclick="castVote('BD-2024-HW-002', 1, true)">Vote Yes</button>
+                        <button class="vote-btn vote-no" onclick="castVote('BD-2024-HW-002', 1, false)">Vote No</button>
+                    </div>
+                </div>
+
+                <div class="bid-card">
+                    <div>
+                        <strong>National Builders Corp.</strong><br>
+                        <small>Bid Amount: ₹248 Crore | Completion: 20 months</small><br>
+                        <small>Votes: 756 Yes, 445 No (63.0% approval)</small>
+                    </div>
+                    <div class="vote-buttons">
+                        <button class="vote-btn vote-yes" onclick="castVote('BD-2024-HW-002', 2, true)">Vote Yes</button>
+                        <button class="vote-btn vote-no" onclick="castVote('BD-2024-HW-002', 2, false)">Vote No</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blockchain-info">
+                <strong>🔗 Transparent Voting:</strong> Your votes are recorded on the public blockchain, ensuring complete transparency and immutability in the procurement process.
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for Tax Return Details -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Tax Return Details</h2>
+            <div id="modalContent">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script>
+        // Initialize user data
+        document.addEventListener('DOMContentLoaded', function() {
+            const userName = localStorage.getItem('userName') || 'John Doe';
+            document.getElementById('userWelcome').textContent = `Welcome, ${userName}`;
+        });
+
+        // Tax Return Form Submission
+        document.getElementById('taxReturnForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fiscalYear = document.getElementById('fiscalYear').value;
+            const totalIncome = document.getElementById('totalIncome').value;
+            const totalCost = document.getElementById('totalCost').value;
+            const pdfFile = document.getElementById('pdfFile').files[0];
+
+            if (!pdfFile) {
+                alert('Please select a PDF file');
+                return;
+            }
+
+            // Simulate IPFS upload and blockchain transaction
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Processing...';
+            submitBtn.disabled = true;
+
+            setTimeout(() => {
+                // Simulate successful submission
+                const mockIPFSHash = 'Qm' + Math.random().toString(36).substring(2, 15);
+                const mockTxHash = '0x' + Math.random().toString(16).substring(2, 66);
+                
+                alert(`Tax Return Submitted Successfully!
+
+Fiscal Year: ${fiscalYear}
+Total Income: ₹${totalIncome}
+Total Tax: ₹${totalCost}
+
+IPFS Hash: ${mockIPFSHash}
+Blockchain Transaction: ${mockTxHash}
+
+Your tax return has been recorded on the blockchain and is now pending NBR review.`);
+
+                // Reset form
+                this.reset();
+                submitBtn.textContent = 'Submit Tax Return';
+                submitBtn.disabled = false;
+            }, 2000);
+        });
+
+        // File upload handler
+        document.getElementById('pdfFile').addEventListener('change', function(e) {
+            const fileUploadDiv = document.querySelector('.file-upload div');
+            if (e.target.files[0]) {
+                fileUploadDiv.innerHTML = `
+                    <span style="font-size: 2rem;">✅</span>
+                    <p>File Selected: ${e.target.files[0].name}</p>
+                    <small>Click to change file</small>
+                `;
+            }
+        });
+
+        // View tax return details
+        function viewDetails(fiscalYear) {
+            const modal = document.getElementById('detailsModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            // Mock data for demonstration
+            const mockData = {
+                '2023-24': {
+                    status: 'Approved',
+                    ipfsHash: 'QmX7KkWvCmKJkKqKjKKjKKjKKjKKjKKjKKjKKjKKjKKj',
+                    blockchainTx: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+                    reviewDate: '2024-05-15',
+                    reviewer: 'NBR Officer #1234',
+                    comments: 'All documents are in order. Tax calculation is correct.'
+                },
+                '2022-23': {
+                    status: 'Approved',
+                    ipfsHash: 'QmY8LlXwDnKLlLrLkLKlKKlKKlKKlKKlKKlKKlKKlKKl',
+                    blockchainTx: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+                    reviewDate: '2023-04-22',
+                    reviewer: 'NBR Officer #5678',
+                    comments: 'Approved after verification of supporting documents.'
+                },
+                '2021-22': {
+                    status: 'Under Review',
+                    ipfsHash: 'QmZ9MmYxEoKMmMsNmNMmNNmNNmNNmNNmNNmNNmNNmNNm',
+                    blockchainTx: '0xdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc',
+                    reviewDate: 'Pending',
+                    reviewer: 'Not assigned',
+                    comments: 'Currently under review by NBR.'
+                }
+            };
+
+            const data = mockData[fiscalYear];
+            
+            modalContent.innerHTML = `
+                <div style="margin-bottom: 1rem;">
+                    <strong>Fiscal Year:</strong> ${fiscalYear}<br>
+                    <strong>Status:</strong> <span class="status-badge status-${data.status.toLowerCase().replace(' ', '-')}">${data.status}</span>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong>IPFS Hash:</strong><br>
+                    <code style="background: #f1f1f1; padding: 0.5rem; border-radius: 4px; display: block; margin-top: 0.5rem; word-break: break-all;">${data.ipfsHash}</code>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong>Blockchain Transaction:</strong><br>
+                    <code style="background: #f1f1f1; padding: 0.5rem; border-radius: 4px; display: block; margin-top: 0.5rem; word-break: break-all;">${data.blockchainTx}</code>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong>Review Date:</strong> ${data.reviewDate}<br>
+                    <strong>Reviewed By:</strong> ${data.reviewer}
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong>Comments:</strong><br>
+                    <em>${data.comments}</em>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        // Cast vote function
+        function castVote(procurementId, bidIndex, vote) {
+            const voteType = vote ? 'YES' : 'NO';
+            
+            if (confirm(`Are you sure you want to vote ${voteType} for this bid?`)) {
+                // Simulate blockchain transaction
+                const mockTxHash = '0x' + Math.random().toString(16).substring(2, 66);
+                
+                alert(`Vote Cast Successfully!
+
+Procurement: ${procurementId}
+Bid Index: ${bidIndex}
+Vote: ${voteType}
+
+Transaction Hash: ${mockTxHash}
+
+Your vote has been recorded on the public blockchain and is now part of the permanent voting record.`);
+                
+                // Update vote counts (mock)
+                location.reload(); // In real app, update counts dynamically
+            }
+        }
+
+        // Modal close functionality
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('detailsModal').style.display = 'none';
+        });
+
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('detailsModal');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Logout function
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // Web3 initialization (for demonstration)
+        if (typeof Web3 !== 'undefined') {
+            console.log('Web3.js loaded successfully');
+            // In a real application, you would connect to your blockchain networks here
+            // const web3Private = new Web3('http://localhost:8545'); // Private blockchain
+            // const web3Public = new Web3('http://localhost:8546');  // Public blockchain
+        }
+    </script>
+</body>
+</html>

@@ -63,7 +63,3 @@ composer.phar
 /backend/.DS_Store
 /backend/workspace.xml
 /backend/Thumbs.db
-
-
-/blockchain/node_modules
-/blockchain/build
