@@ -9,6 +9,8 @@ use App\Http\Controllers\Auth\BppaAuthController;
 use App\Http\Controllers\TaxReturnController;
 use App\Http\Controllers\ProcurementController;
 use App\Http\Controllers\CitizenDashboardController;
+use App\Http\Controllers\NationalLedgerController;
+use App\Http\Controllers\FundRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +53,16 @@ Route::prefix('v1')->group(function () {
         Route::get('procurements/active', [ProcurementController::class, 'getActiveProcurements']);
         Route::get('procurements/{id}', [ProcurementController::class, 'getProcurementDetails']);
         Route::get('statistics', [TaxReturnController::class, 'getStatistics']);
+        
+        // National Ledger public transparency endpoints
+        Route::prefix('national-ledger')->group(function () {
+            Route::get('summary', [NationalLedgerController::class, 'getLedgerSummary']);
+            Route::get('statistics', [NationalLedgerController::class, 'getPublicStatistics']);
+            Route::get('revenue/entries', [NationalLedgerController::class, 'getRevenueEntries']);
+            Route::get('expense/entries', [NationalLedgerController::class, 'getExpenseEntries']);
+            Route::get('revenue/fiscal-year', [NationalLedgerController::class, 'getRevenueByFiscalYear']);
+            Route::get('expense/procurement/{procurementId}', [NationalLedgerController::class, 'getExpenseByProcurement']);
+        });
     });
 });
 
@@ -62,15 +74,30 @@ Route::prefix('v1')->group(function () {
         Route::post('logout', [CitizenAuthController::class, 'logout']);
         Route::get('profile', [CitizenAuthController::class, 'profile']);
         
+        // Dashboard
+        Route::get('dashboard/stats', [CitizenDashboardController::class, 'getDashboardStats']);
+        
         // Tax returns
         Route::prefix('tax-returns')->group(function () {
-            Route::post('submit', [TaxReturnController::class, 'submit']);
+            Route::post('submit', [TaxReturnController::class, 'submit'])->name('api.tax-returns.submit');
             Route::get('my-returns/{citizenId}', [TaxReturnController::class, 'getCitizenReturns']);
             Route::get('details/{id}', [TaxReturnController::class, 'getReturnDetails']);
         });
         
-        // Voting
-        Route::post('vote', [ProcurementController::class, 'castVote']);
+        // Procurement Voting
+        Route::prefix('procurements')->group(function () {
+            Route::get('active', [CitizenDashboardController::class, 'getActiveProcurements']);
+            Route::get('{id}/details', [CitizenDashboardController::class, 'getProcurementDetails']);
+            Route::get('bids/{bid_id}/details', [CitizenDashboardController::class, 'getBidDetails']);
+            Route::post('vote', [CitizenDashboardController::class, 'castVote']);
+            Route::get('my-votes', [CitizenDashboardController::class, 'getMyVotes']);
+        });
+        
+        // National Ledger queries for citizens
+        Route::prefix('national-ledger')->group(function () {
+            Route::get('summary', [NationalLedgerController::class, 'getLedgerSummary']);
+            Route::get('revenue/fiscal-year', [NationalLedgerController::class, 'getRevenueByFiscalYear']);
+        });
     });
 
     // NBR Officer routes
@@ -98,12 +125,20 @@ Route::prefix('v1')->group(function () {
         });
         
         Route::get('procurements/open', [VendorAuthController::class, 'getOpenProcurements']);
+        
+        // Fund Requests
+        Route::prefix('fund-requests')->group(function () {
+            Route::post('submit', [FundRequestController::class, 'submitFundRequest']);
+            Route::get('vendor/{vendorId}', [FundRequestController::class, 'getFundRequestsByVendor']);
+            Route::get('{requestId}', [FundRequestController::class, 'getFundRequest']);
+        });
     });
 
     // BPPA Officer routes
     Route::prefix('bppa')->group(function () {
         Route::post('logout', [BppaAuthController::class, 'logout']);
         Route::get('profile', [BppaAuthController::class, 'profile']);
+        Route::get('dashboard/stats', [BppaAuthController::class, 'getDashboardStats']);
         
         // Procurement management
         Route::prefix('procurements')->group(function () {
@@ -118,6 +153,25 @@ Route::prefix('v1')->group(function () {
         Route::prefix('vendors')->group(function () {
             Route::get('pending', [BppaAuthController::class, 'getPendingVendors']);
             Route::post('approve/{id}', [BppaAuthController::class, 'approveVendor']);
+        });
+        
+        // Fund Request Management
+        Route::prefix('fund-requests')->group(function () {
+            Route::get('pending', [FundRequestController::class, 'getPendingFundRequests']);
+            Route::get('statistics', [FundRequestController::class, 'getStatistics']);
+            Route::get('procurement/{procurementId}', [FundRequestController::class, 'getFundRequestsByProcurement']);
+            Route::post('{requestId}/approve', [FundRequestController::class, 'approveFundRequest']);
+            Route::post('{requestId}/reject', [FundRequestController::class, 'rejectFundRequest']);
+            Route::post('{requestId}/disburse', [FundRequestController::class, 'markFundsDisbursed']);
+            Route::get('{requestId}', [FundRequestController::class, 'getFundRequest']);
+        });
+        
+        // National Ledger management
+        Route::prefix('national-ledger')->group(function () {
+            Route::get('summary', [NationalLedgerController::class, 'getLedgerSummary']);
+            Route::get('revenue/entries', [NationalLedgerController::class, 'getRevenueEntries']);
+            Route::get('expense/entries', [NationalLedgerController::class, 'getExpenseEntries']);
+            Route::get('expense/procurement/{procurementId}', [NationalLedgerController::class, 'getExpenseByProcurement']);
         });
     });
 });
@@ -145,7 +199,11 @@ Route::fallback(function () {
             'Procurements' => [
                 'POST /api/v1/bppa/procurements/create',
                 'POST /api/v1/vendor/bids/submit',
-                'POST /api/v1/citizen/vote',
+                'GET /api/v1/citizen/procurements/active',
+                'GET /api/v1/citizen/procurements/{id}/details',
+                'GET /api/v1/citizen/procurements/bids/{bid_id}/details',
+                'POST /api/v1/citizen/procurements/vote',
+                'GET /api/v1/citizen/procurements/my-votes',
                 'GET /api/v1/public/procurements/active',
             ],
             'Public Data' => [

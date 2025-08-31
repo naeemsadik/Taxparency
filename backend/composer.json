@@ -8,7 +8,10 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1"
+        "laravel/tinker": "^2.10.1",
+        "guzzlehttp/guzzle": "^7.8",
+        "rannmann/php-ipfs-api": "^0.0.11",
+        "intervention/image": "^3.8"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

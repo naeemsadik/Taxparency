@@ -8,6 +8,7 @@ use App\Models\Vote;
 use App\Models\Citizen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 
 class ProcurementController extends Controller
@@ -241,8 +242,17 @@ class ProcurementController extends Controller
      */
     public function castVote(Request $request)
     {
+        // Get citizen ID from session
+        $citizen_id = Session::get('user_id');
+        
+        if (!$citizen_id) {
+            return response()->json([
+                'success' => false,
+                'message' => "Not authenticated. Please log in as a citizen. Citizen ID is $citizen_id"
+            ], 401);
+        }
+
         $validator = Validator::make($request->all(), [
-            'citizen_id' => 'required|exists:citizens,id',
             'bid_id' => 'required|exists:bids,id',
             'vote' => 'required|boolean',
         ]);
@@ -267,7 +277,7 @@ class ProcurementController extends Controller
         }
 
         // Check if citizen already voted for this bid
-        $existingVote = Vote::where('citizen_id', $request->citizen_id)
+        $existingVote = Vote::where('citizen_id', $citizen_id)
                            ->where('bid_id', $request->bid_id)
                            ->first();
 
@@ -283,7 +293,7 @@ class ProcurementController extends Controller
 
             // Create vote record
             $vote = Vote::create([
-                'citizen_id' => $request->citizen_id,
+                'citizen_id' => $citizen_id,
                 'bid_id' => $request->bid_id,
                 'vote' => $request->vote,
                 'blockchain_tx_hash' => $mockTxHash

@@ -1,0 +1,280 @@
+@extends('layouts.app')
+
+@section('title', 'Taxparency - Blockchain-Based Transparency Platform')
+
+@section('content')
+    <section id="home" class="hero">
+        <div class="container">
+            <h1>Welcome to Taxparency</h1>
+            <p>A hybrid blockchain-powered transparency platform for tax returns and public procurement in Bangladesh</p>
+            <p>Ensuring accountability through distributed ledger technology with real-time National Revenue & Expense tracking</p>
+            <div style="margin-top: 2rem;">
+                <a href="{{ route('national-ledger') }}" class="btn" style="margin-right: 1rem;">🏛️ View National Ledger</a>
+                <a href="#features" class="btn">📋 Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="login">
+        <div class="container">
+            <div class="login-grid">
+                <div class="login-card">
+                    <div class="icon">👤</div>
+                    <h3>Citizens</h3>
+                    <p>Submit tax returns, view history, and participate in public procurement voting</p>
+                    <a href="{{ route('login.citizen') }}" class="btn">Citizen Login</a>
+                </div>
+
+                <div class="login-card">
+                    <div class="icon">🏛️</div>
+                    <h3>NBR Officers</h3>
+                    <p>Review and audit submitted tax returns from citizens</p>
+                    <a href="{{ route('login.nbr') }}" class="btn">NBR Login</a>
+                </div>
+
+                <div class="login-card">
+                    <div class="icon">🏢</div>
+                    <h3>Vendors</h3>
+                    <p>Submit bids for public procurements and track bid status</p>
+                    <a href="{{ route('login.vendor') }}" class="btn">Vendor Login</a>
+                </div>
+
+                <div class="login-card">
+                    <div class="icon">📋</div>
+                    <h3>BPPA Officers</h3>
+                    <p>Manage public procurements, approve vendors, and shortlist bids</p>
+                    <a href="{{ route('login.bppa') }}" class="btn">BPPA Login</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h4>🏛️ National Revenue & Expense Ledger</h4>
+                    <p>Real-time transparency into Bangladesh's public finances. Track every BDT from verified tax returns to procurement expenses on a public blockchain.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>🔒 Hybrid Blockchain Architecture</h4>
+                    <p>Private blockchain for sensitive tax data and public blockchain for transparency. L1 & QCBS procurement shortlisting with complete audit trails.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>🗳️ Democratic Procurement Voting</h4>
+                    <p>Citizens vote on shortlisted procurement bids through the public blockchain, ensuring democratic participation in government spending decisions.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>💼 Vendor Fund Request System</h4>
+                    <p>Vendors can request additional funds for projects with BPPA officer approval workflow. All fund requests and approvals stored immutably on blockchain.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>✅ NBR Tax Validation</h4>
+                    <p>National Board of Revenue officers review and validate tax returns. Approved tax amounts automatically added to National Revenue Ledger.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>📊 Complete Transparency Dashboard</h4>
+                    <p>Public dashboard with real-time insights into national revenue, expenses, procurement statistics, and citizen voting participation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="technology" class="tech-stack">
+        <div class="container">
+            <h3>Technology Stack</h3>
+            <div class="tech-list">
+                <span class="tech-item">PHP/Laravel</span>
+                <span class="tech-item">Solidity Smart Contracts</span>
+                <span class="tech-item">Ethereum/Polygon (Public)</span>
+                <span class="tech-item">Hyperledger Besu (Private)</span>
+                <span class="tech-item">PostgreSQL</span>
+                <span class="tech-item">IPFS</span>
+                <span class="tech-item">Web3.js</span>
+                <span class="tech-item">MetaMask Integration</span>
+                <span class="tech-item">HTML5/CSS3/JavaScript</span>
+            </div>
+        </div>
+    </section>
+@endsection
+
+@push('styles')
+<style>
+    .hero {
+        text-align: center;
+        padding: 4rem 0;
+        color: white;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+
+    .login-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-align: center;
+    }
+
+    .login-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .login-card h3 {
+        color: #667eea;
+        margin-bottom: 1rem;
+        font-size: 1.4rem;
+    }
+
+    .login-card p {
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+
+    .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .features {
+        background: rgba(255, 255, 255, 0.95);
+        margin: 3rem 0;
+        padding: 3rem 2rem;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+    }
+
+    .features h2 {
+        text-align: center;
+        color: #667eea;
+        margin-bottom: 2rem;
+        font-size: 2.5rem;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .feature-item {
+        padding: 1.5rem;
+        border-left: 4px solid #667eea;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 8px;
+    }
+
+    .feature-item h4 {
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+
+    .tech-stack {
+        background: rgba(255, 255, 255, 0.95);
+        margin: 3rem 0;
+        padding: 2rem;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+    }
+
+    .tech-stack h3 {
+        text-align: center;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .tech-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .tech-item {
+        background: #667eea;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 {
+            font-size: 2rem;
+        }
+        
+        .login-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Add animation on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observe elements for animation
+    document.querySelectorAll('.login-card, .feature-item').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s, transform 0.6s';
+        observer.observe(el);
+    });
+</script>
+@endpush

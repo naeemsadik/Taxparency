@@ -1,10 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+// Import National Ledger interface
+interface INationalLedger {
+    function addRevenue(
+        string memory _tiin,
+        uint256 _amount,
+        string memory _fiscalYear,
+        address _validator,
+        string memory _taxReturnHash
+    ) external;
+}
+
 /**
  * @title TaxReturnRegistry
  * @dev Smart contract for storing and validating tax returns on a private blockchain
  * Only NBR officers can validate tax returns
+ * Automatically adds verified tax amounts to National Revenue Ledger
  */
 contract TaxReturnRegistry {
     
@@ -38,11 +50,17 @@ contract TaxReturnRegistry {
     bytes32[] public allTaxReturnKeys;
     address[] public allOfficers;
     
+    // National Ledger integration
+    INationalLedger public nationalLedger;
+    bool public nationalLedgerEnabled;
+    
     // Events
     event TaxReturnSubmitted(bytes32 indexed returnKey, string tiin, string fiscalYear, string ipfsHash);
     event TaxReturnValidated(bytes32 indexed returnKey, address validator, bool approved);
+    event RevenueAddedToNationalLedger(bytes32 indexed returnKey, uint256 amount, string fiscalYear);
     event NbrOfficerRegistered(address indexed officer, string officerId);
     event NbrOfficerDeactivated(address indexed officer);
+    event NationalLedgerUpdated(address indexed newLedger);
     
     // Modifiers
     modifier onlyNbrOfficer() {
@@ -56,11 +74,36 @@ contract TaxReturnRegistry {
         _;
     }
     
+    address public admin;
+    
+    modifier onlyContractAdmin() {
+        require(msg.sender == admin, "Only contract admin can perform this action");
+        _;
+    }
+    
     /**
      * @dev Constructor - deploys the contract
      */
     constructor() {
-        // Contract is deployed and ready to use
+        admin = msg.sender;
+        nationalLedgerEnabled = false;
+    }
+    
+    /**
+     * @dev Set National Ledger contract address (admin only)
+     */
+    function setNationalLedger(address _nationalLedgerAddress) external onlyContractAdmin {
+        require(_nationalLedgerAddress != address(0), "Invalid national ledger address");
+        nationalLedger = INationalLedger(_nationalLedgerAddress);
+        nationalLedgerEnabled = true;
+        emit NationalLedgerUpdated(_nationalLedgerAddress);
+    }
+    
+    /**
+     * @dev Enable/disable National Ledger integration (admin only)
+     */
+    function toggleNationalLedger(bool _enabled) external onlyContractAdmin {
+        nationalLedgerEnabled = _enabled;
     }
     
     /**
@@ -150,6 +193,22 @@ contract TaxReturnRegistry {
         taxReturns[_returnKey].isValidated = true;
         taxReturns[_returnKey].isApproved = _approved;
         taxReturns[_returnKey].comments = _comments;
+        
+        // If approved and National Ledger is enabled, add to revenue
+        if (_approved && nationalLedgerEnabled && address(nationalLedger) != address(0)) {
+            try nationalLedger.addRevenue(
+                taxReturns[_returnKey].tiin,
+                taxReturns[_returnKey].totalCost, // Tax amount owed
+                taxReturns[_returnKey].fiscalYear,
+                msg.sender,
+                taxReturns[_returnKey].ipfsHash
+            ) {
+                emit RevenueAddedToNationalLedger(_returnKey, taxReturns[_returnKey].totalCost, taxReturns[_returnKey].fiscalYear);
+            } catch {
+                // Log error but don't fail the validation
+                // This ensures tax validation still works even if National Ledger fails
+            }
+        }
         
         emit TaxReturnValidated(_returnKey, msg.sender, _approved);
     }

@@ -325,14 +325,14 @@ class DatabaseSeeder extends Seeder
         foreach ($citizens as $citizen) {
             foreach ($bids as $bid) {
                 // Simulate random voting (80% yes, 20% no)
-                $vote = rand(1, 10) <= 8;
+                // $vote = rand(1, 10) <= 8;
                 
-                Vote::create([
-                    'citizen_id' => $citizen->id,
-                    'bid_id' => $bid->id,
-                    'vote' => $vote,
-                    'blockchain_tx_hash' => '0x' . Str::random(64),
-                ]);
+                // Vote::create([
+                //     'citizen_id' => $citizen->id,
+                //     'bid_id' => $bid->id,
+                //     'vote' => $vote,
+                //     'blockchain_tx_hash' => '0x' . Str::random(64),
+                // ]);
             }
         }
     }

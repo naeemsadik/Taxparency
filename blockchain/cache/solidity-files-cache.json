@@ -1,17 +1,126 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "C:\\Users\\user\\taxparency\\blockchain\\contracts\\ProcurementVoting.sol": {
-      "lastModificationDate": 1755866785973,
+    "D:\\Taxparency\\blockchain\\contracts\\FundRequest.sol": {
+      "lastModificationDate": 1756556929523,
+      "contentHash": "bec8960aa575df8bfd8787c11c769eb0",
+      "sourceName": "contracts/FundRequest.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "FundRequest"
+      ]
+    },
+    "D:\\Taxparency\\blockchain\\contracts\\NationalLedger.sol": {
+      "lastModificationDate": 1756556771275,
+      "contentHash": "f54729e5be957e31a9c2eaa0b9ee7e95",
+      "sourceName": "contracts/NationalLedger.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "NationalLedger"
+      ]
+    },
+    "D:\\Taxparency\\blockchain\\contracts\\Procurement.sol": {
+      "lastModificationDate": 1756556865914,
+      "contentHash": "2c4048c5ce10fd92a6890915ca859a34",
+      "sourceName": "contracts/Procurement.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "Procurement"
+      ]
+    },
+    "D:\\Taxparency\\blockchain\\contracts\\ProcurementVoting.sol": {
+      "lastModificationDate": 1756394900004,
       "contentHash": "94906bf055df1d174a2820310d4a8d67",
       "sourceName": "contracts/ProcurementVoting.sol",
       "solcConfig": {
         "version": "0.8.19",
         "settings": {
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -36,17 +145,18 @@
         "ProcurementVoting"
       ]
     },
-    "C:\\Users\\user\\taxparency\\blockchain\\contracts\\TaxReturnRegistry.sol": {
-      "lastModificationDate": 1755866779753,
-      "contentHash": "2c5a6128c2763834fa0fb7abbd3bc81b",
+    "D:\\Taxparency\\blockchain\\contracts\\TaxReturnRegistry.sol": {
+      "lastModificationDate": 1756556975491,
+      "contentHash": "431fd23768ae09dcc027d0fafb66f524",
       "sourceName": "contracts/TaxReturnRegistry.sol",
       "solcConfig": {
         "version": "0.8.19",
         "settings": {
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -68,6 +178,7 @@
         "^0.8.19"
       ],
       "artifacts": [
+        "INationalLedger",
         "TaxReturnRegistry"
       ]
     }

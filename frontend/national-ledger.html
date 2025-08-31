@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Ledger - Public Transparency Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        main {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        .dashboard {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-header h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            color: #667eea;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .entries-table {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .expense-amount {
+            color: #dc3545;
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            background: white;
+            border-radius: 0 0 10px 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .transparency-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-left: 1rem;
+        }
+
+        .blockchain-hash {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">🏛️ Taxparency - National Ledger</div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="national-ledger.html" class="active">National Ledger</a>
+                    <a href="#revenue">Revenue</a>
+                    <a href="#expenses">Expenses</a>
+                    <a href="#statistics">Statistics</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h1>National Revenue & Expense Ledger</h1>
+                    <p>Real-time transparency into Bangladesh's public finances through blockchain technology</p>
+                    <span class="transparency-badge">🔗 Blockchain Verified</span>
+                </div>
+
+                <!-- Summary Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="icon">💰</div>
+                        <div class="value" id="totalRevenue">৳125.00 Cr</div>
+                        <div class="label">Total National Revenue</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="icon">💸</div>
+                        <div class="value expense-amount" id="totalExpense">৳75.00 Cr</div>
+                        <div class="label">Total National Expense</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="icon">🏦</div>
+                        <div class="value" id="availableBalance">৳50.00 Cr</div>
+                        <div class="label">Available Balance</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 40%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="icon">📊</div>
+                        <div class="value" id="transparencyScore">98.5%</div>
+                        <div class="label">Transparency Score</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 98.5%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabbed Content -->
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('revenue')">💰 Revenue Entries</button>
+                    <button class="tab" onclick="showTab('expenses')">💸 Expense Entries</button>
+                    <button class="tab" onclick="showTab('analytics')">📈 Analytics</button>
+                    <button class="tab" onclick="showTab('activity')">🔄 Recent Activity</button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Revenue Tab -->
+                    <div id="revenue" class="tab-pane active">
+                        <div class="chart-title">Recent Revenue Entries from Verified Tax Returns</div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>TIIN</th>
+                                        <th>Amount (BDT)</th>
+                                        <th>Fiscal Year</th>
+                                        <th>Verified By</th>
+                                        <th>Date</th>
+                                        <th>Blockchain Hash</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revenueTableBody">
+                                    <tr>
+                                        <td>123456789012</td>
+                                        <td class="amount">৳1,50,000</td>
+                                        <td>2024-25</td>
+                                        <td>Dr. Abdul Karim (NBR)</td>
+                                        <td>Aug 29, 2024</td>
+                                        <td><span class="blockchain-hash">0x7d2f...a8c9</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>987654321098</td>
+                                        <td class="amount">৳2,80,000</td>
+                                        <td>2024-25</td>
+                                        <td>Dr. Abdul Karim (NBR)</td>
+                                        <td>Aug 28, 2024</td>
+                                        <td><span class="blockchain-hash">0x9f3a...b7d2</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>456789123456</td>
+                                        <td class="amount">৳95,000</td>
+                                        <td>2024-25</td>
+                                        <td>Ms. Rashida Begum (NBR)</td>
+                                        <td>Aug 28, 2024</td>
+                                        <td><span class="blockchain-hash">0x2c5e...f4a1</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Expenses Tab -->
+                    <div id="expenses" class="tab-pane">
+                        <div class="chart-title">Recent Expense Entries from Awarded Procurements</div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Procurement ID</th>
+                                        <th>Amount (BDT)</th>
+                                        <th>Vendor</th>
+                                        <th>Type</th>
+                                        <th>Approved By</th>
+                                        <th>Date</th>
+                                        <th>Blockchain Hash</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expenseTableBody">
+                                    <tr>
+                                        <td>PROC-2024-045</td>
+                                        <td class="amount expense-amount">৳1.85 Cr</td>
+                                        <td>XYZ Infrastructure Pvt.</td>
+                                        <td>Initial Award</td>
+                                        <td>Mr. Rafiqul Islam (BPPA)</td>
+                                        <td>Aug 29, 2024</td>
+                                        <td><span class="blockchain-hash">0x8a7b...c9d2</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>PROC-2024-001</td>
+                                        <td class="amount expense-amount">৳25 Lakh</td>
+                                        <td>ABC Construction Ltd.</td>
+                                        <td>Fund Request</td>
+                                        <td>Mr. Rafiqul Islam (BPPA)</td>
+                                        <td>Aug 28, 2024</td>
+                                        <td><span class="blockchain-hash">0x4f2d...a8e7</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>PROC-2024-042</td>
+                                        <td class="amount expense-amount">৳95 Lakh</td>
+                                        <td>Digital Solutions BD</td>
+                                        <td>Initial Award</td>
+                                        <td>Ms. Fatima Khatun (BPPA)</td>
+                                        <td>Aug 27, 2024</td>
+                                        <td><span class="blockchain-hash">0x6e9c...b3f8</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Tab -->
+                    <div id="analytics" class="tab-pane">
+                        <div class="chart-title">Financial Analytics & Trends</div>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="icon">📈</div>
+                                <div class="value">15,643</div>
+                                <div class="label">Tax Returns Processed</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="icon">🏢</div>
+                                <div class="value">247</div>
+                                <div class="label">Total Procurements</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="icon">🗳️</div>
+                                <div class="value">8,934</div>
+                                <div class="label">Citizen Votes Cast</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="icon">💼</div>
+                                <div class="value">67</div>
+                                <div class="label">Fund Requests</div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <h3>Monthly Revenue vs Expense Trend (FY 2024-25)</h3>
+                            <div id="monthlyChart" style="height: 300px; display: flex; align-items: end; justify-content: space-around; border-bottom: 2px solid #ddd;">
+                                <!-- Simplified bar chart representation -->
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <div style="width: 30px; height: 120px; background: #667eea; margin-bottom: 5px;"></div>
+                                    <div style="width: 30px; height: 80px; background: #dc3545; margin-bottom: 5px;"></div>
+                                    <small>Apr</small>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <div style="width: 30px; height: 140px; background: #667eea; margin-bottom: 5px;"></div>
+                                    <div style="width: 30px; height: 90px; background: #dc3545; margin-bottom: 5px;"></div>
+                                    <small>May</small>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <div style="width: 30px; height: 130px; background: #667eea; margin-bottom: 5px;"></div>
+                                    <div style="width: 30px; height: 85px; background: #dc3545; margin-bottom: 5px;"></div>
+                                    <small>Jun</small>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <div style="width: 30px; height: 150px; background: #667eea; margin-bottom: 5px;"></div>
+                                    <div style="width: 30px; height: 100px; background: #dc3545; margin-bottom: 5px;"></div>
+                                    <small>Jul</small>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <div style="width: 30px; height: 135px; background: #667eea; margin-bottom: 5px;"></div>
+                                    <div style="width: 30px; height: 95px; background: #dc3545; margin-bottom: 5px;"></div>
+                                    <small>Aug</small>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 1rem;">
+                                <div><span style="background: #667eea; width: 15px; height: 15px; display: inline-block; margin-right: 5px;"></span>Revenue</div>
+                                <div><span style="background: #dc3545; width: 15px; height: 15px; display: inline-block; margin-right: 5px;"></span>Expense</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Tab -->
+                    <div id="activity" class="tab-pane">
+                        <div class="chart-title">Recent Blockchain Activity</div>
+                        <div id="activityFeed">
+                            <div style="border-left: 4px solid #28a745; padding-left: 1rem; margin-bottom: 1rem;">
+                                <h4>💰 Tax Return Approved</h4>
+                                <p>Tax return approved for TIIN: 123456789012</p>
+                                <p>Amount: ৳1,50,000 | Verified by: Dr. Abdul Karim (NBR)</p>
+                                <small>2 hours ago | <span class="blockchain-hash">0x7d2f...a8c9</span></small>
+                            </div>
+                            
+                            <div style="border-left: 4px solid #dc3545; padding-left: 1rem; margin-bottom: 1rem;">
+                                <h4>🏗️ Procurement Awarded</h4>
+                                <p>Procurement PROC-2024-045 awarded to XYZ Infrastructure</p>
+                                <p>Amount: ৳1.85 Crore | Approved by: Mr. Rafiqul Islam (BPPA)</p>
+                                <small>6 hours ago | <span class="blockchain-hash">0x8a7b...c9d2</span></small>
+                            </div>
+                            
+                            <div style="border-left: 4px solid #ffc107; padding-left: 1rem; margin-bottom: 1rem;">
+                                <h4>💼 Fund Request Approved</h4>
+                                <p>Additional fund request approved for PROC-2024-001</p>
+                                <p>Amount: ৳25 Lakh | Approved by: Mr. Rafiqul Islam (BPPA)</p>
+                                <small>1 day ago | <span class="blockchain-hash">0x4f2d...a8e7</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="last-updated">
+                <p>🕒 Last updated: <span id="lastUpdated">August 30, 2024 at 12:24 PM</span></p>
+                <p>Data verified on blockchain • Updated in real-time</p>
+                <p>🔗 Connected to: Public Blockchain (Ethereum/Polygon) | Private Blockchain (Hyperledger Besu)</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tab panes
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab pane
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Load National Ledger data
+        async function loadNationalLedgerData() {
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/public/national-ledger/summary');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const summary = data.data;
+                    
+                    // Update statistics
+                    document.getElementById('totalRevenue').textContent = 
+                        `৳${(summary.totalRevenue / 10000000).toFixed(2)} Cr`;
+                    document.getElementById('totalExpense').textContent = 
+                        `৳${(summary.totalExpense / 10000000).toFixed(2)} Cr`;
+                    document.getElementById('availableBalance').textContent = 
+                        `৳${(summary.availableBalance / 10000000).toFixed(2)} Cr`;
+                }
+            } catch (error) {
+                console.error('Failed to load national ledger data:', error);
+            }
+        }
+
+        // Load recent revenue entries
+        async function loadRevenueEntries() {
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/public/national-ledger/revenue/entries?limit=10');
+                const data = await response.json();
+                
+                if (data.success && data.data.entries) {
+                    const tbody = document.getElementById('revenueTableBody');
+                    tbody.innerHTML = '';
+                    
+                    data.data.entries.forEach(entry => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${entry.tiin}</td>
+                            <td class="amount">৳${entry.amount.toLocaleString()}</td>
+                            <td>${entry.fiscalYear}</td>
+                            <td>${entry.validatorName || 'NBR Officer'}</td>
+                            <td>${new Date(entry.timestamp).toLocaleDateString()}</td>
+                            <td><span class="blockchain-hash">${entry.taxReturnHash.substring(0, 10)}...</span></td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load revenue entries:', error);
+            }
+        }
+
+        // Load recent expense entries
+        async function loadExpenseEntries() {
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/public/national-ledger/expense/entries?limit=10');
+                const data = await response.json();
+                
+                if (data.success && data.data.entries) {
+                    const tbody = document.getElementById('expenseTableBody');
+                    tbody.innerHTML = '';
+                    
+                    data.data.entries.forEach(entry => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${entry.procurementId}</td>
+                            <td class="amount expense-amount">৳${entry.amount.toLocaleString()}</td>
+                            <td>${entry.vendorName}</td>
+                            <td>${entry.isFundRequest ? 'Fund Request' : 'Initial Award'}</td>
+                            <td>${entry.bppaOfficerName || 'BPPA Officer'}</td>
+                            <td>${new Date(entry.timestamp).toLocaleDateString()}</td>
+                            <td><span class="blockchain-hash">0x${Math.random().toString(16).substring(2, 12)}...</span></td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load expense entries:', error);
+            }
+        }
+
+        // Update timestamp
+        function updateTimestamp() {
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNationalLedgerData();
+            loadRevenueEntries();
+            loadExpenseEntries();
+            updateTimestamp();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                loadNationalLedgerData();
+                updateTimestamp();
+            }, 30000);
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

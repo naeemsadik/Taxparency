@@ -1,0 +1,378 @@
+Product Requirement Document (PRD)
+Project Title: Blockchain-Based Tax Transparency & Procurement System
+Version: 1.0
+Owner: Team Chainers
+Prepared by: Naeem Abdullah Sadik
+Date: 30 Aug, 2025
+
+1. Executive Summary
+The system is a hybrid blockchain-based solution for ensuring tax transparency and fair public procurement. It integrates citizens, vendors, and government officers (BPPA + NBR) into a decentralized platform where tax returns, procurement bidding, verification, fund approvals, and voting processes are transparent, immutable, and auditable.
+The project leverages:
+Public Blockchain for citizen-facing transparency (national revenue, expenses, voting).
+
+
+Private Blockchain for sensitive operations (tax verification, officer approvals, bid submissions).
+
+
+Off-chain system (Laravel + PostgreSQL) for database integration, validation, and UI/UX.
+
+
+
+2. Objectives
+Enable transparent tax verification with blockchain-stored audit trails.
+
+
+Ensure trustworthy national revenue/expense reporting in real time.
+
+
+Introduce citizen participation in procurement decision-making.
+
+
+Provide fair, tamper-proof vendor bidding and selection.
+
+
+Establish secure approval workflows for additional funding requests.
+
+
+
+3. Stakeholders
+Citizens: Submit tax returns (via uploaded PDF), view national revenue/expense, vote on procurements.
+
+
+Vendors: Submit bids for procurements, request extra funds.
+
+
+BPPA Officers: Publish procurements, shortlist bids (L1 or QCBS), approve/reject fund requests.
+
+
+NBR Officers/System: Verify submitted tax returns with existing NBR database.
+
+
+System Admin: Manage roles, monitor activity, handle disputes.
+
+
+
+4. Core Features & Requirements
+4.1 Tax Return Management
+Citizen:
+
+
+Upload tax return PDF.
+
+
+Submit to blockchain for verification.
+
+
+System:
+
+
+Store hash of PDF in blockchain (immutability).
+
+
+Off-chain verification (Laravel + PostgreSQL) with NBR database.
+
+
+Smart Contract (TaxReturnRegistry.sol):
+
+
+Store verified return hashes.
+
+
+Add amount to National Revenue Ledger if verified.
+
+
+
+4.2 Procurement Management
+BPPA Officer:
+
+
+Create procurement request (title, budget, requirements, deadline).
+
+
+Publish on blockchain (Procurement.sol).
+
+
+Vendor:
+
+
+Submit bid (costing, technical details, delivery timeline).
+
+
+Store in blockchain immutably.
+
+
+Smart Contract (Procurement.sol):
+
+
+Accept bids.
+
+
+Lock submission deadlines.
+
+
+
+4.3 Bid Shortlisting
+BPPA Officer:
+
+
+Apply shortlisting criteria:
+
+
+L1: Lowest cost.
+
+
+QCBS: Quality-Cost Based Selection (weighted score).
+
+
+Shortlisted bids stored on blockchain.
+
+
+System:
+
+
+Generate public shortlist visible to citizens.
+
+
+
+4.4 Citizen Voting
+Citizen:
+
+
+Cast vote on shortlisted bids (within deadline).
+
+
+Voting requires citizen identity validation.
+
+
+Smart Contract (Voting.sol):
+
+
+Count votes transparently.
+
+
+Auto-select winning bid after voting closes.
+
+
+
+4.5 National Ledger (Revenue & Expense)
+Smart Contract (NationalLedger.sol):
+
+
+Add verified tax amounts to National Revenue.
+
+
+Deduct awarded bid amounts from National Expense.
+
+
+Publicly queryable by any citizen.
+
+
+
+4.6 Fund Requests & Approvals
+Vendor:
+
+
+Submit additional fund request (reason, required amount).
+
+
+BPPA Officer:
+
+
+Approve/reject fund request, with justification.
+
+
+Smart Contract (FundRequest.sol):
+
+
+Record request, decision, and justification.
+
+
+Adjust national expenses if approved.
+
+
+
+5. System Architecture
+5.1 Hybrid Blockchain Layers
+Private Blockchain (Hyperledger Besu / Private Ethereum):
+
+
+Tax verification (sensitive data).
+
+
+Procurement bids & officer approvals.
+
+
+Officer fund approvals.
+
+
+Public Blockchain (Ethereum / Polygon):
+
+
+National revenue & expenses.
+
+
+Citizen voting results.
+
+
+Public ledger queries.
+
+
+
+5.2 Off-Chain System
+Laravel Framework:
+
+
+Backend for API & workflow management.
+
+
+Connects blockchain (Web3.js / PHP web3 libraries).
+
+
+PostgreSQL Database:
+
+
+Stores user accounts, roles, session data, PDF metadata.
+
+
+Acts as cache for blockchain queries (for performance).
+
+
+
+5.3 Core Smart Contracts
+TaxReturnRegistry.sol → For tax PDF verification & revenue ledger update.
+
+
+Procurement.sol → Procurement lifecycle management.
+
+
+Voting.sol → Citizen voting system.
+
+
+NationalLedger.sol → Tracks national revenue & expenses.
+
+
+FundRequest.sol → Manages vendor fund requests and officer approvals.
+
+
+
+6. User Interaction Flow
+Citizen uploads tax PDF → Stored & verified → Amount added to Revenue Ledger.
+
+
+BPPA Officer publishes procurement → Vendors submit bids → Stored on blockchain.
+
+
+BPPA Officer shortlists bids → Citizens vote → Winning bid awarded.
+
+
+Winning bid cost → Deducted from National Expense.
+
+
+Vendors request extra funds → BPPA approves/rejects → Updated in Expense Ledger.
+
+
+
+7. Non-Functional Requirements
+Security:
+
+
+PDF hashes on blockchain prevent tampering.
+
+
+Role-based access control (citizens, officers, vendors).
+
+
+Scalability:
+
+
+Off-chain PostgreSQL handles high-volume queries.
+
+
+Rollup-based aggregation for votes & bid submissions.
+
+
+Transparency:
+
+
+All transactions publicly auditable.
+
+
+Interoperability:
+
+
+Compatible with NBR database & existing government systems.
+
+
+Usability:
+
+
+Citizen-friendly UI with multi-language support (Bangla + English).
+
+
+
+8. Technology Stack
+Frontend: HTML, CSS, JavaScript (React optional).
+
+
+Backend: Laravel (PHP).
+
+
+Database: PostgreSQL.
+
+
+Blockchain:
+
+
+Solidity smart contracts.
+
+
+Ethereum/Polygon (public).
+
+
+Hyperledger Besu / Private Ethereum (private).
+
+
+Wallets: MetaMask (citizen voting & transaction signing).
+
+
+Storage: IPFS (PDF storage, metadata).
+
+
+
+9. Milestones
+M1: Tax return verification module (PDF → Blockchain).
+
+
+M2: Procurement publishing & bid submission.
+
+
+M3: Bid shortlisting & voting system.
+
+
+M4: National Ledger (revenue & expense).
+
+
+M5: Fund request & approval workflow.
+
+
+M6: Full citizen-facing public dashboard.
+
+
+
+10. Risks & Mitigations
+High gas fees on public chain: Use Layer-2 (Polygon, Optimism).
+
+
+Citizen identity fraud: Link NBR-verified identity with blockchain wallet.
+
+
+Data privacy: Keep sensitive tax data off-chain; only store hashes.
+
+
+Complex officer approvals: Use multi-sig for critical decisions.
+
+
+
+✅ This PRD covers all major technical, functional, and architectural aspects of your system.
+Would you like me to also create a visual architecture diagram (showing the interaction between Public Chain, Private Chain, Laravel, PostgreSQL, and users) so you can include it in your proposal?
+

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="test-token">
+    <title>Vote Test</title>
+</head>
+<body>
+    <h1>Voting Functionality Test</h1>
+    <p><strong>Test Instructions:</strong></p>
+    <ol>
+        <li>Start server: <code>php artisan serve --host=127.0.0.1 --port=8080</code></li>
+        <li>Go to: <code>http://127.0.0.1:8080/login/citizen</code></li>
+        <li>Login with TIIN: <code>citizen123</code> and any password</li>
+        <li>Look for "Public Procurement Voting" section</li>
+        <li>Click "👍 Vote YES" or "👎 Vote NO" on any bid</li>
+        <li>Check browser console (F12) for detailed error logs if issues persist</li>
+    </ol>
+
+    <h2>API Test (For Advanced Testing)</h2>
+    <button onclick="testVotingAPI()">Test Voting API Directly</button>
+    <div id="result"></div>
+
+    <script>
+        // Enhanced fetchWithCSRF function for testing
+        function fetchWithCSRF(url, options = {}) {
+            options.headers = options.headers || {};
+            options.headers['X-CSRF-TOKEN'] = 'test-token'; // For testing
+            options.headers['Content-Type'] = options.headers['Content-Type'] || 'application/json';
+            return fetch(url, options);
+        }
+
+        function testVotingAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+
+            // First test: Get active procurements
+            fetchWithCSRF('http://127.0.0.1:8080/api/v1/citizen/procurements/active')
+            .then(response => {
+                console.log('Active procurements response:', response);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Active procurements data:', data);
+                if (data.success && data.data.length > 0) {
+                    const firstBid = data.data[0].shortlisted_bids[0];
+                    resultDiv.innerHTML += '<p>✅ Found active procurements</p>';
+                    resultDiv.innerHTML += '<p>Testing vote on bid ID: ' + firstBid.id + '</p>';
+                    
+                    // Test casting a vote
+                    return fetchWithCSRF('http://127.0.0.1:8080/api/v1/citizen/procurements/vote', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            bid_id: firstBid.id,
+                            vote: true
+                        })
+                    });
+                } else {
+                    resultDiv.innerHTML += '<p>❌ No active procurements found</p>';
+                    return Promise.reject('No active procurements');
+                }
+            })
+            .then(response => {
+                console.log('Vote response:', response);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Vote data:', data);
+                if (data.success) {
+                    resultDiv.innerHTML += '<p>✅ Vote cast successfully!</p>';
+                    resultDiv.innerHTML += '<p>Transaction: ' + (data.data?.blockchain_tx || 'Generated') + '</p>';
+                } else {
+                    resultDiv.innerHTML += '<p>❌ Vote failed: ' + data.message + '</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Test error:', error);
+                resultDiv.innerHTML += '<p>❌ Test failed: ' + error.message + '</p>';
+                resultDiv.innerHTML += '<p>Check browser console for details</p>';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -44,4 +44,15 @@ class BppaOfficer extends Authenticatable
     {
         return 'username';
     }
+
+    /**
+     * Create a simple token for API authentication
+     */
+    public function createToken($name)
+    {
+        $token = \Illuminate\Support\Str::random(80);
+        // In a real app, you'd store this in a tokens table
+        // For now, we'll just return a mock token structure
+        return (object) ['plainTextToken' => $token];
+    }
 }

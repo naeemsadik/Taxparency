@@ -20,6 +20,7 @@ class Vendor extends Authenticatable
         'is_approved',
         'approved_at',
         'approved_by',
+        'approval_notes',
     ];
 
     protected $hidden = [
