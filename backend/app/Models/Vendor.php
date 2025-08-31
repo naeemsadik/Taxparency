@@ -49,6 +49,11 @@ class Vendor extends Authenticatable
         return $this->belongsTo(BppaOfficer::class, 'approved_by');
     }
 
+    public function winningBids(): HasMany
+    {
+        return $this->hasMany(WinningBid::class);
+    }
+
     public function getAuthIdentifierName(): string
     {
         return 'username';

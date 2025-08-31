@@ -11,6 +11,8 @@ use App\Http\Controllers\ProcurementController;
 use App\Http\Controllers\CitizenDashboardController;
 use App\Http\Controllers\NationalLedgerController;
 use App\Http\Controllers\FundRequestController;
+use App\Http\Controllers\WinningBidController;
+use App\Http\Controllers\BidController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,14 +65,22 @@ Route::prefix('v1')->group(function () {
             Route::get('revenue/fiscal-year', [NationalLedgerController::class, 'getRevenueByFiscalYear']);
             Route::get('expense/procurement/{procurementId}', [NationalLedgerController::class, 'getExpenseByProcurement']);
         });
+        
+        // Public Winning Bids transparency endpoints
+        Route::prefix('winning-bids')->group(function () {
+            Route::get('', [WinningBidController::class, 'index']);
+            Route::get('{id}', [WinningBidController::class, 'show']);
+            Route::get('statistics', [WinningBidController::class, 'statistics']);
+            Route::get('vendor/{vendorId}', [WinningBidController::class, 'byVendor']);
+        });
     });
 });
 
 // Protected routes (for demo - no authentication required)
 Route::prefix('v1')->group(function () {
     
-    // Citizen routes
-    Route::prefix('citizen')->group(function () {
+    // Citizen routes (with session middleware)
+    Route::prefix('citizen')->middleware(['web'])->group(function () {
         Route::post('logout', [CitizenAuthController::class, 'logout']);
         Route::get('profile', [CitizenAuthController::class, 'profile']);
         
@@ -113,29 +123,38 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    // Vendor routes
-    Route::prefix('vendor')->group(function () {
+    // Vendor routes (with session middleware)
+    Route::prefix('vendor')->middleware(['web'])->group(function () {
         Route::post('logout', [VendorAuthController::class, 'logout']);
         Route::get('profile', [VendorAuthController::class, 'profile']);
         
         // Bidding
         Route::prefix('bids')->group(function () {
-            Route::post('submit', [ProcurementController::class, 'submitBid']);
-            Route::get('my-bids/{vendorId}', [VendorAuthController::class, 'getMyBids']);
+            Route::post('submit', [BidController::class, 'submitBid']);
+            Route::put('{bidId}/edit', [BidController::class, 'editBid']);
+            Route::get('{bidId}/details', [BidController::class, 'getBidDetails']);
+            Route::get('my-bids/{vendorId}', [BidController::class, 'getVendorBids']);
         });
         
-        Route::get('procurements/open', [VendorAuthController::class, 'getOpenProcurements']);
+        Route::get('procurements/open', [BidController::class, 'getOpenProcurements']);
+        Route::get('winning-bids/{vendorId}', [BidController::class, 'getWinningBids']);
         
         // Fund Requests
-        Route::prefix('fund-requests')->group(function () {
+        Route::prefix('fund-requests')->middleware(['web'])->group(function () {
             Route::post('submit', [FundRequestController::class, 'submitFundRequest']);
             Route::get('vendor/{vendorId}', [FundRequestController::class, 'getFundRequestsByVendor']);
             Route::get('{requestId}', [FundRequestController::class, 'getFundRequest']);
         });
+        
+        // Winning Bids (vendor-specific)
+        Route::prefix('winning-bids')->middleware(['web'])->group(function () {
+            Route::get('my-wins/{vendorId}', [WinningBidController::class, 'getVendorWinningBids']);
+            Route::get('{id}/details', [WinningBidController::class, 'getWinningBidDetails']);
+        });
     });
 
-    // BPPA Officer routes
-    Route::prefix('bppa')->group(function () {
+    // BPPA Officer routes (with session middleware)
+    Route::prefix('bppa')->middleware(['web'])->group(function () {
         Route::post('logout', [BppaAuthController::class, 'logout']);
         Route::get('profile', [BppaAuthController::class, 'profile']);
         Route::get('dashboard/stats', [BppaAuthController::class, 'getDashboardStats']);
@@ -143,6 +162,8 @@ Route::prefix('v1')->group(function () {
         // Procurement management
         Route::prefix('procurements')->group(function () {
             Route::post('create', [ProcurementController::class, 'create']);
+            Route::get('{id}/details', [ProcurementController::class, 'getProcurementDetails']);
+            Route::get('{id}/bids', [ProcurementController::class, 'getProcurementBids']);
             Route::post('shortlist-bids', [ProcurementController::class, 'shortlistBids']);
             Route::post('{id}/start-voting', [ProcurementController::class, 'startVoting']);
             Route::post('{id}/complete-voting', [ProcurementController::class, 'completeVoting']);
@@ -172,6 +193,16 @@ Route::prefix('v1')->group(function () {
             Route::get('revenue/entries', [NationalLedgerController::class, 'getRevenueEntries']);
             Route::get('expense/entries', [NationalLedgerController::class, 'getExpenseEntries']);
             Route::get('expense/procurement/{procurementId}', [NationalLedgerController::class, 'getExpenseByProcurement']);
+        });
+        
+        // Winning Bids Management
+        Route::prefix('winning-bids')->group(function () {
+            Route::get('', [WinningBidController::class, 'index']);
+            Route::get('{id}', [WinningBidController::class, 'show']);
+            Route::get('statistics', [WinningBidController::class, 'statistics']);
+            Route::post('{id}/update-status', [WinningBidController::class, 'updateContractStatus']);
+            Route::get('blockchain-status', [WinningBidController::class, 'blockchainStatus']);
+            Route::post('sync-blockchain', [WinningBidController::class, 'syncToBlockchain']);
         });
     });
 });
@@ -209,6 +240,14 @@ Route::fallback(function () {
             'Public Data' => [
                 'GET /api/v1/public/statistics',
                 'GET /api/v1/public/procurements/{id}',
+            ],
+            'Winning Bids' => [
+                'GET /api/v1/public/winning-bids',
+                'GET /api/v1/public/winning-bids/{id}',
+                'GET /api/v1/public/winning-bids/statistics',
+                'GET /api/v1/public/winning-bids/vendor/{vendorId}',
+                'GET /api/v1/bppa/winning-bids/blockchain-status',
+                'POST /api/v1/bppa/winning-bids/{id}/update-status',
             ]
         ]
     ], 404);

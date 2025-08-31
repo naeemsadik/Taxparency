@@ -221,6 +221,168 @@
             border: 1px solid #bee5eb;
         }
 
+        /* Contract Status Styles */
+        .status-awarded {
+            background: #cce5ff;
+            color: #0066cc;
+            border: 1px solid #80c1ff;
+        }
+
+        .status-signed {
+            background: #e6ccff;
+            color: #6f42c1;
+            border: 1px solid #d399ff;
+        }
+
+        .status-in-progress {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-terminated {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Progress Bar Styles */
+        .progress-container {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .progress-green {
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+
+        .progress-yellow {
+            background: linear-gradient(90deg, #ffc107, #ffca2c);
+        }
+
+        .progress-orange {
+            background: linear-gradient(90deg, #fd7e14, #ff8c42);
+        }
+
+        .progress-red {
+            background: linear-gradient(90deg, #dc3545, #e74c3c);
+        }
+
+        /* Winning Bid Item Styles */
+        .winning-bid-item {
+            border: 1px solid #e1e1e1;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            border-left: 4px solid #28a745;
+        }
+
+        .winning-bid-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .winning-bid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .winning-bid-info {
+            flex: 1;
+        }
+
+        .winning-bid-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .contract-timeline {
+            background: #f1f3f4;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: white;
+        }
+
+        .timeline-completed {
+            background: #28a745;
+        }
+
+        .timeline-pending {
+            background: #6c757d;
+        }
+
+        .timeline-current {
+            background: #ffc107;
+        }
+
+        .blockchain-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            margin-left: 0.5rem;
+        }
+
+        .blockchain-onchain {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .blockchain-offchain {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
         .search-box {
             width: 100%;
             padding: 0.75rem;
@@ -398,6 +560,14 @@
                     <span class="stat-number" id="wonBids">0</span>
                     <div class="stat-label">Won</div>
                 </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="activeContracts">0</span>
+                    <div class="stat-label">Active Contracts</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalContractValue">₹0</span>
+                    <div class="stat-label">Total Contract Value</div>
+                </div>
             </div>
         </div>
 
@@ -421,6 +591,18 @@
                 <div class="empty-state">
                     <div style="font-size: 3rem;">📝</div>
                     <p>Loading your bids...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ongoing Projects / Winning Bids -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>🏆 Ongoing Projects (Winning Bids)</h2>
+            <input type="text" class="search-box" placeholder="Search ongoing projects..." id="winningBidsSearchBox" onkeyup="filterWinningBids()">
+            <div id="ongoingProjects">
+                <div class="empty-state">
+                    <div style="font-size: 3rem;">🔄</div>
+                    <p>Loading ongoing projects...</p>
                 </div>
             </div>
         </div>

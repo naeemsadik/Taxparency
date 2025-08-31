@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Procurement extends Model
 {
@@ -55,6 +56,11 @@ class Procurement extends Model
     public function winningBid(): BelongsTo
     {
         return $this->belongsTo(Bid::class, 'winning_bid_id');
+    }
+
+    public function winningBidRecord(): HasOne
+    {
+        return $this->hasOne(WinningBid::class);
     }
 
     // Scopes

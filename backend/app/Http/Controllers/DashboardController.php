@@ -9,6 +9,7 @@ use App\Models\TaxReturn;
 use App\Models\Procurement;
 use App\Models\Bid;
 use App\Models\Vote;
+use App\Models\WinningBid;
 
 class DashboardController extends Controller
 {
@@ -37,13 +38,22 @@ class DashboardController extends Controller
             ->orderBy('voting_ends_at', 'asc')
             ->get()
             ->map(function ($procurement) use ($userId) {
+                // Check if citizen has voted on ANY bid in this procurement
+                $hasVotedOnProcurement = Vote::where('citizen_id', $userId)
+                    ->whereHas('bid', function($query) use ($procurement) {
+                        $query->where('procurement_id', $procurement->id);
+                    })
+                    ->exists();
+                
                 // Add voting status for each bid for this citizen
                 if ($procurement->shortlistedBids) {
-                    $procurement->shortlistedBids->each(function ($bid) use ($userId) {
+                    $procurement->shortlistedBids->each(function ($bid) use ($userId, $hasVotedOnProcurement) {
                         $existingVote = Vote::where('citizen_id', $userId)
                                           ->where('bid_id', $bid->id)
                                           ->first();
-                        $bid->has_voted = $existingVote !== null;
+                        
+                        // Citizen has voted if they voted on ANY bid in this procurement
+                        $bid->has_voted = $hasVotedOnProcurement;
                         $bid->my_vote = $existingVote ? $existingVote->vote : null;
                         $bid->total_votes = $bid->votes_yes + $bid->votes_no;
                         $bid->vote_percentage = $bid->total_votes > 0 
@@ -110,13 +120,20 @@ class DashboardController extends Controller
 
         // Get open procurements
         $openProcurements = Procurement::whereIn('status', ['open', 'bidding'])
-            ->orderBy('deadline', 'asc')
+            ->where('submission_deadline', '>', now())
+            ->orderBy('submission_deadline', 'asc')
             ->get();
 
-        // Get vendor's bids
+        // Get vendor's bids with relationships
         $myBids = Bid::where('vendor_id', $userId)
-            ->with('procurement')
+            ->with(['procurement', 'winningRecord'])
             ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get vendor's winning bids
+        $winningBids = WinningBid::where('vendor_id', $userId)
+            ->with(['procurement', 'bid'])
+            ->orderBy('contract_awarded_at', 'desc')
             ->get();
 
         // Calculate statistics
@@ -125,9 +142,10 @@ class DashboardController extends Controller
             'active_bids' => $myBids->where('status', 'submitted')->count(),
             'shortlisted_bids' => $myBids->where('status', 'shortlisted')->count(),
             'won_bids' => $myBids->where('status', 'winner')->count(),
+            'ongoing_projects' => $winningBids->whereIn('contract_status', ['signed', 'in_progress'])->count(),
         ];
 
-        return view('dashboards.vendor', compact('openProcurements', 'myBids', 'stats'));
+        return view('dashboards.vendor', compact('openProcurements', 'myBids', 'winningBids', 'stats'));
     }
 
     public function bppaDashboard()
@@ -142,7 +160,7 @@ class DashboardController extends Controller
 
         // Get procurements needing attention (review bids, shortlist, etc.)
         $actionNeeded = Procurement::where('status', 'bidding')
-            ->where('deadline', '<', now())
+            ->where('submission_deadline', '<', now())
             ->with(['bids' => function($query) {
                 $query->where('status', 'submitted');
             }])

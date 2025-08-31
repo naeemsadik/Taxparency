@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Procurement;
-use App\Models\Bid;
-use App\Models\Vote;
-use App\Models\Citizen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use App\Models\Procurement;
+use App\Models\Bid;
+use App\Models\Vendor;
 
 class ProcurementController extends Controller
 {
@@ -21,13 +20,11 @@ class ProcurementController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'procurement_id' => 'required|string|unique:procurements,procurement_id',
             'estimated_value' => 'required|numeric|min:0',
             'category' => 'required|string|max:100',
             'submission_deadline' => 'required|date|after:today',
             'project_start_date' => 'nullable|date',
             'project_end_date' => 'nullable|date|after:project_start_date',
-            'created_by' => 'required|exists:bppa_officers,id',
         ]);
 
         if ($validator->fails()) {
@@ -39,7 +36,22 @@ class ProcurementController extends Controller
         }
 
         try {
-            $procurement = Procurement::create($request->all());
+            $officerId = Session::get('user_id');
+            if (!$officerId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'BPPA officer not authenticated'
+                ], 401);
+            }
+
+            $procurementId = 'BD-' . date('Y') . '-' . strtoupper(substr($request->category, 0, 3)) . '-' . str_pad(Procurement::count() + 1, 3, '0', STR_PAD_LEFT);
+
+            $procurementData = $request->all();
+            $procurementData['procurement_id'] = $procurementId;
+            $procurementData['created_by'] = $officerId;
+            $procurementData['status'] = 'open';
+
+            $procurement = Procurement::create($procurementData);
 
             return response()->json([
                 'success' => true,
@@ -56,123 +68,208 @@ class ProcurementController extends Controller
     }
 
     /**
-     * Submit a bid for a procurement (Vendor)
+     * Get procurement details (BPPA Officer or Public)
      */
-    public function submitBid(Request $request)
+    public function getProcurementDetails($id)
     {
-        $validator = Validator::make($request->all(), [
-            'procurement_id' => 'required|exists:procurements,id',
-            'vendor_id' => 'required|exists:vendors,id',
-            'bid_amount' => 'required|numeric|min:0',
-            'technical_proposal' => 'required|string',
-            'completion_days' => 'required|integer|min:1',
-            'additional_notes' => 'nullable|string',
-            'costing_document' => 'required|file|mimes:pdf|max:10240',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        // Check if vendor already submitted a bid
-        $existingBid = Bid::where('procurement_id', $request->procurement_id)
-                         ->where('vendor_id', $request->vendor_id)
-                         ->first();
-
-        if ($existingBid) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bid already submitted for this procurement'
-            ], 409);
-        }
-
         try {
-            // Store PDF file and simulate IPFS upload
-            $file = $request->file('costing_document');
-            $fileName = 'bids/' . Str::uuid() . '.pdf';
-            $filePath = $file->storeAs('public', $fileName);
-            $mockIpfsHash = 'Qm' . Str::random(44);
+            $officerId = Session::get('user_id');
+            $userType = Session::get('user_type');
+            
+            if ($officerId && $userType === 'bppa') {
+                $procurement = Procurement::with([
+                    'bids.vendor:id,company_name',
+                    'creator:id,full_name,officer_id'
+                ])->where('id', $id)
+                  ->where('created_by', $officerId)
+                  ->first();
 
-            $bid = Bid::create([
-                'procurement_id' => $request->procurement_id,
-                'vendor_id' => $request->vendor_id,
-                'bid_amount' => $request->bid_amount,
-                'technical_proposal' => $request->technical_proposal,
-                'costing_document' => $mockIpfsHash,
-                'completion_days' => $request->completion_days,
-                'additional_notes' => $request->additional_notes,
-            ]);
+                if (!$procurement) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Procurement not found or access denied'
+                    ], 404);
+                }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Bid submitted successfully',
-                'data' => [
-                    'bid' => $bid->load(['procurement:id,title,procurement_id', 'vendor:id,company_name']),
-                    'ipfs_hash' => $mockIpfsHash
-                ]
-            ], 201);
+                // Add bids count for BPPA view
+                $procurement->bids_count = $procurement->bids->count();
 
+                return response()->json([
+                    'success' => true,
+                    'data' => $procurement
+                ]);
+            } else {
+                // Public request - return limited info
+                $procurement = Procurement::with([
+                    'shortlistedBids.vendor:id,company_name',
+                    'shortlistedBids.votes',
+                    'creator:id,full_name,officer_id'
+                ])->find($id);
+
+                if (!$procurement) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Procurement not found'
+                    ], 404);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $procurement
+                ]);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to submit bid: ' . $e->getMessage()
+                'message' => 'Failed to fetch procurement details: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Shortlist bids (BPPA Officer)
+     * Shortlist bids for a procurement (BPPA Officer)
      */
     public function shortlistBids(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'procurement_id' => 'required|exists:procurements,id',
-            'bid_ids' => 'required|array|max:4',
-            'bid_ids.*' => 'exists:bids,id',
-            'officer_id' => 'required|exists:bppa_officers,id',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
-            // Update selected bids as shortlisted
-            Bid::whereIn('id', $request->bid_ids)
-               ->where('procurement_id', $request->procurement_id)
-               ->update([
-                   'is_shortlisted' => true,
-                   'shortlisted_at' => now(),
-                   'shortlisted_by' => $request->officer_id,
-                   'status' => 'shortlisted'
-               ]);
+            // Get the authenticated BPPA officer ID from session
+            $officerId = Session::get('user_id');
+            if (!$officerId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'BPPA officer not authenticated'
+                ], 401);
+            }
 
-            // Update procurement status
-            $procurement = Procurement::find($request->procurement_id);
-            $procurement->update(['status' => 'shortlisted']);
+            $validator = Validator::make($request->all(), [
+                'procurement_id' => 'required|exists:procurements,id',
+                'bid_ids' => 'required|array',
+                'bid_ids.*' => 'exists:bids,id',
+                'shortlist_comments' => 'required|array',
+                'shortlist_comments.*' => 'required|string|max:500'
+            ]);
 
-            $shortlistedBids = Bid::with(['vendor:id,company_name'])
-                                 ->whereIn('id', $request->bid_ids)
-                                 ->get();
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $procurement = Procurement::where('id', $request->procurement_id)
+                ->where('created_by', $officerId)
+                ->first();
+
+            if (!$procurement) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Procurement not found or access denied'
+                ], 404);
+            }
+
+            if ($procurement->status !== 'bidding') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Procurement is not in bidding phase'
+                ], 409);
+            }
+
+            // First, unshortlist all existing bids for this procurement
+            Bid::where('procurement_id', $request->procurement_id)
+                ->update([
+                    'is_shortlisted' => false,
+                    'shortlisted_at' => null,
+                    'shortlisted_by' => null,
+                    'shortlist_comment' => null
+                ]);
+
+            // Shortlist the selected bids
+            $shortlistedBids = [];
+            foreach ($request->bid_ids as $index => $bidId) {
+                $bid = Bid::find($bidId);
+                if ($bid && $bid->procurement_id == $request->procurement_id) {
+                    $bid->update([
+                        'is_shortlisted' => true,
+                        'shortlisted_at' => now(),
+                        'shortlisted_by' => $officerId,
+                        'shortlist_comment' => $request->shortlist_comments[$index] ?? '',
+                        'status' => 'shortlisted'
+                    ]);
+                    $shortlistedBids[] = $bid->load('vendor:id,company_name');
+                }
+            }
+
+            // Update procurement status to voting if bids were shortlisted
+            if (count($shortlistedBids) > 0) {
+                $procurement->update([
+                    'status' => 'voting',
+                    'voting_ends_at' => now()->addDays(7) // 7 days voting period
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Bids shortlisted successfully',
-                'data' => $shortlistedBids
+                'data' => [
+                    'shortlisted_bids' => $shortlistedBids,
+                    'procurement_status' => $procurement->fresh()->status,
+                    'voting_ends_at' => $procurement->fresh()->voting_ends_at
+                ]
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to shortlist bids: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all bids for a procurement (BPPA Officer)
+     */
+    public function getProcurementBids($id)
+    {
+        try {
+            $officerId = Session::get('user_id');
+            if (!$officerId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'BPPA officer not authenticated'
+                ], 401);
+            }
+
+            $procurement = Procurement::where('id', $id)
+                ->where('created_by', $officerId)
+                ->with([
+                    'bids' => function($query) {
+                        $query->with('vendor:id,company_name,vendor_license_number,contact_person,contact_email,contact_phone')
+                              ->orderBy('created_at', 'desc');
+                    }
+                ])
+                ->first();
+
+            if (!$procurement) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Procurement not found or access denied'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'procurement' => $procurement,
+                    'bids_count' => $procurement->bids->count(),
+                    'shortlisted_count' => $procurement->bids->where('is_shortlisted', true)->count()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch procurement bids: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -223,7 +320,7 @@ class ProcurementController extends Controller
                 'success' => true,
                 'message' => 'Voting started successfully',
                 'data' => [
-                    'procurement' => $procurement,
+                    'procurement' => $procurement->fresh(),
                     'voting_ends_at' => $votingEnds,
                     'blockchain_tx' => $mockTxHash
                 ]
@@ -235,137 +332,6 @@ class ProcurementController extends Controller
                 'message' => 'Failed to start voting: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * Cast vote on a bid (Citizen)
-     */
-    public function castVote(Request $request)
-    {
-        // Get citizen ID from session
-        $citizen_id = Session::get('user_id');
-        
-        if (!$citizen_id) {
-            return response()->json([
-                'success' => false,
-                'message' => "Not authenticated. Please log in as a citizen. Citizen ID is $citizen_id"
-            ], 401);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'bid_id' => 'required|exists:bids,id',
-            'vote' => 'required|boolean',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $bid = Bid::with('procurement')->find($request->bid_id);
-        
-        // Check if procurement is in voting phase
-        if ($bid->procurement->status !== 'voting' || 
-            now() > $bid->procurement->voting_ends_at) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Voting is not active for this procurement'
-            ], 409);
-        }
-
-        // Check if citizen already voted for this bid
-        $existingVote = Vote::where('citizen_id', $citizen_id)
-                           ->where('bid_id', $request->bid_id)
-                           ->first();
-
-        if ($existingVote) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You have already voted for this bid'
-            ], 409);
-        }
-
-        try {
-            $mockTxHash = '0x' . Str::random(64);
-
-            // Create vote record
-            $vote = Vote::create([
-                'citizen_id' => $citizen_id,
-                'bid_id' => $request->bid_id,
-                'vote' => $request->vote,
-                'blockchain_tx_hash' => $mockTxHash
-            ]);
-
-            // Update bid vote counts
-            if ($request->vote) {
-                $bid->increment('votes_yes');
-            } else {
-                $bid->increment('votes_no');
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Vote cast successfully',
-                'data' => [
-                    'vote' => $vote,
-                    'blockchain_tx' => $mockTxHash,
-                    'current_votes' => [
-                        'yes' => $bid->fresh()->votes_yes,
-                        'no' => $bid->fresh()->votes_no
-                    ]
-                ]
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to cast vote: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get active procurements for voting
-     */
-    public function getActiveProcurements()
-    {
-        $procurements = Procurement::with(['shortlistedBids.vendor:id,company_name'])
-                                  ->where('status', 'voting')
-                                  ->where('voting_ends_at', '>', now())
-                                  ->orderBy('voting_ends_at', 'asc')
-                                  ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $procurements
-        ]);
-    }
-
-    /**
-     * Get procurement details with bids and votes
-     */
-    public function getProcurementDetails($id)
-    {
-        $procurement = Procurement::with([
-                'shortlistedBids.vendor:id,company_name',
-                'shortlistedBids.votes',
-                'creator:id,full_name,officer_id'
-            ])->find($id);
-
-        if (!$procurement) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Procurement not found'
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $procurement
-        ]);
     }
 
     /**

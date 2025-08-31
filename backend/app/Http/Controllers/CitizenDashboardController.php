@@ -235,15 +235,17 @@ class CitizenDashboardController extends Controller
                 ], 409);
             }
 
-            // Check if citizen already voted for this bid
+            // Check if citizen already voted for ANY bid in this procurement
             $existingVote = Vote::where('citizen_id', $citizen_id)
-                               ->where('bid_id', $request->bid_id)
+                               ->whereHas('bid', function($query) use ($bid) {
+                                   $query->where('procurement_id', $bid->procurement_id);
+                               })
                                ->first();
 
             if ($existingVote) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'You have already voted for this bid'
+                    'message' => 'You have already voted on a bid in this procurement. You can only vote once per procurement.'
                 ], 409);
             }
 
@@ -264,12 +266,32 @@ class CitizenDashboardController extends Controller
                 $bid->increment('votes_no');
             }
 
+            // Automatically reject all other shortlisted bids for this citizen
+            $otherShortlistedBids = Bid::where('procurement_id', $bid->procurement_id)
+                ->where('id', '!=', $bid->id)
+                ->where('is_shortlisted', true)
+                ->get();
+
+            foreach ($otherShortlistedBids as $otherBid) {
+                // Create automatic rejection votes for other bids
+                Vote::create([
+                    'citizen_id' => $citizen_id,
+                    'bid_id' => $otherBid->id,
+                    'vote' => false, // Automatically vote NO
+                    'blockchain_tx_hash' => '0x' . Str::random(64)
+                ]);
+
+                // Update vote counts for rejected bids
+                $otherBid->increment('votes_no');
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Vote cast successfully',
+                'message' => 'Vote cast successfully. Other shortlisted bids have been automatically rejected.',
                 'data' => [
                     'vote' => $vote,
                     'blockchain_tx' => $mockTxHash,
+                    'auto_rejected_bids' => $otherShortlistedBids->count(),
                     'current_votes' => [
                         'yes' => $bid->fresh()->votes_yes,
                         'no' => $bid->fresh()->votes_no,

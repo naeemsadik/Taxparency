@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\JsonResponse;
 
 class BppaAuthController extends Controller
@@ -66,6 +67,15 @@ class BppaAuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
+        // Check if using session-based auth
+        if (Session::has('user_id') && Session::get('user_type') === 'bppa') {
+            Session::forget(['user_id', 'user_type', 'user_name', 'username', 'authenticated']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Logout successful'
+            ]);
+        }
+        
         // For demo purposes, just return success
         return response()->json([
             'success' => true,
@@ -78,8 +88,14 @@ class BppaAuthController extends Controller
      */
     public function profile(Request $request): JsonResponse
     {
-        // For demo purposes, return sample officer data
-        $officer = BppaOfficer::first(); // Get first officer for demo
+        // Check if using session-based auth
+        if (Session::has('user_id') && Session::get('user_type') === 'bppa') {
+            $officerId = Session::get('user_id');
+            $officer = BppaOfficer::find($officerId);
+        } else {
+            // For demo purposes, return sample officer data
+            $officer = BppaOfficer::first(); // Get first officer for demo
+        }
         
         if (!$officer) {
             return response()->json([
@@ -121,7 +137,20 @@ class BppaAuthController extends Controller
     public function getMyProcurements(Request $request, string $officerId): JsonResponse
     {
         try {
-            $officer = BppaOfficer::where('officer_id', $officerId)->first();
+            // Check if using session-based auth
+            if (Session::has('user_id') && Session::get('user_type') === 'bppa') {
+                $sessionOfficerId = Session::get('user_id');
+                // Verify the session officer ID matches the requested officer ID
+                if ($sessionOfficerId != $officerId) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Access denied'
+                    ], 403);
+                }
+                $officer = BppaOfficer::find($sessionOfficerId);
+            } else {
+                $officer = BppaOfficer::where('officer_id', $officerId)->first();
+            }
             
             if (!$officer) {
                 return response()->json([

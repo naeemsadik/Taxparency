@@ -138,6 +138,10 @@
             Public Procurement Voting
         </h2>
         
+        <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+            <strong>📋 Voting Rule:</strong> You can only vote ONCE per procurement. When you vote for one bid, all other shortlisted bids are automatically rejected on your behalf.
+        </div>
+        
         @forelse($activeProcurements ?? [] as $procurement)
             <div class="procurement-card">
                 <div class="procurement-title">{{ $procurement->title ?? 'Procurement Title' }}</div>
@@ -191,7 +195,11 @@
                         <div class="vote-buttons">
                             @if($bid->has_voted)
                                 <div class="vote-status">
-                                    <span class="voted-message">You have voted {{ $bid->my_vote ? 'YES' : 'NO' }}</span>
+                                    @if($bid->my_vote !== null)
+                                        <span class="voted-message">You voted {{ $bid->my_vote ? 'YES' : 'NO' }} on this bid</span>
+                                    @else
+                                        <span class="voted-message">You have already voted on another bid in this procurement</span>
+                                    @endif
                                 </div>
                             @else
                                 <button class="vote-btn vote-yes" onclick="castVote({{ $procurement->id ?? 0 }}, {{ $bid->id ?? 0 }}, true)">
@@ -621,6 +629,7 @@ Your tax return has been recorded on the blockchain and is now pending NBR revie
                 console.log('Vote response data:', data);
                 
                 if (data.success) {
+                    const autoRejectedCount = data.data?.auto_rejected_bids || 0;
                     alert(`Vote Cast Successfully!
 
 Procurement: ${procurementId}
@@ -628,6 +637,8 @@ Bid ID: ${bidId}
 Vote: ${voteType}
 
 Transaction Hash: ${data.data?.blockchain_tx || 'Generated'}
+
+${autoRejectedCount > 0 ? `⚠️  ${autoRejectedCount} other shortlisted bid(s) have been automatically rejected on your behalf.` : ''}
 
 Your vote has been recorded on the public blockchain and is now part of the permanent voting record.`);
                     

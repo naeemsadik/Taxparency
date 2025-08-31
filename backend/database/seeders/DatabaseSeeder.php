@@ -45,6 +45,9 @@ class DatabaseSeeder extends Seeder
         $this->command->info('Seeding Votes...');
         $this->seedVotes();
         
+        $this->command->info('Seeding Demo Bid Data...');
+        $this->call(BidDemoDataSeeder::class);
+        
         $this->command->info('Database seeding completed!');
     }
     

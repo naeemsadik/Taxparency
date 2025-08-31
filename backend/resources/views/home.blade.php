@@ -24,13 +24,13 @@
                     <p>Submit tax returns, view history, and participate in public procurement voting</p>
                     <a href="{{ route('login.citizen') }}" class="btn">Citizen Login</a>
                 </div>
-
+{{-- 
                 <div class="login-card">
                     <div class="icon">🏛️</div>
                     <h3>NBR Officers</h3>
                     <p>Review and audit submitted tax returns from citizens</p>
                     <a href="{{ route('login.nbr') }}" class="btn">NBR Login</a>
-                </div>
+                </div> --}}
 
                 <div class="login-card">
                     <div class="icon">🏢</div>
