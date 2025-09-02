@@ -134,7 +134,12 @@ Route::prefix('v1')->group(function () {
             Route::put('{bidId}/edit', [BidController::class, 'editBid']);
             Route::get('{bidId}/details', [BidController::class, 'getBidDetails']);
             Route::get('my-bids/{vendorId}', [BidController::class, 'getVendorBids']);
+            Route::get('blockchain/{bidId}/verify', [BidController::class, 'verifyBidIntegrity']);
+            Route::post('blockchain/{bidId}/retry-connection', [BidController::class, 'retryBlockchainConnection']);
         });
+        
+        // Blockchain bid retrieval
+        Route::get('bids/blockchain/retrieve', [BidController::class, 'getBidFromBlockchain']);
         
         Route::get('procurements/open', [BidController::class, 'getOpenProcurements']);
         Route::get('winning-bids/{vendorId}', [BidController::class, 'getWinningBids']);

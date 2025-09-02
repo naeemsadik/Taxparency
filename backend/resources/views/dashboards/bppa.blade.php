@@ -311,8 +311,8 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="submitShortlist()">Shortlist Selected Bids</button>
             </div>
-        </div>
     </div>
+  </div>
 </div>
 
 <script>
@@ -716,7 +716,7 @@ document.getElementById('createProcurementForm').addEventListener('submit', asyn
                 const errorMessages = Object.values(data.errors).flat().join('\n');
                 alert('Validation failed:\n' + errorMessages);
             } else {
-                alert(data.message || 'Failed to create procurement.');
+            alert(data.message || 'Failed to create procurement.');
             }
             btn.disabled = false;
             return;
